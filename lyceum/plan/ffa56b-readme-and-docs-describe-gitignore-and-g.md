@@ -3,7 +3,7 @@ id: ffa56b-readme-and-docs-describe-gitignore-and-g
 type: doc
 title: 'README and docs: describe .gitignore and .gitattributes accurately (#13)'
 branch: docs/ffa56b-readme-and-docs-describe-gitignore-and-g
-status: implemented
+status: closed
 gate: close
 approvals: []
 ---
