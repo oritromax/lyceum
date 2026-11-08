@@ -36,9 +36,9 @@ jobs:
       - name: Build
         working-directory: docs-site
         run: npm run build
-      - name: Sitemap, CLI reference and llms files were generated
+      - name: Sitemap, CLI reference, llms files and the OG card were generated
         working-directory: docs-site
-        run: test -s dist/sitemap-index.xml && test -s dist/reference/cli/index.html && test -s dist/llms.txt && test -s dist/llms-full.txt && test -s dist/start/install.md
+        run: test -s dist/sitemap-index.xml && test -s dist/reference/cli/index.html && test -s dist/llms.txt && test -s dist/llms-full.txt && test -s dist/start/install.md && test -s dist/og.png && grep -q 'property="og:image"' dist/index.html
       - uses: actions/upload-artifact@v4
         if: github.event_name == 'push'
         with:

@@ -33,6 +33,19 @@ Markdown copy of each page at its URL plus `.md`, for example `/start/install.md
 content, so they include the generated CLI reference and cannot drift from the pages. The page groups in
 `src/lib/llms.mjs` mirror the sidebar; the build fails if a page is in none of them, so add a new page to both.
 
+## Open Graph card
+
+`public/og.png` is the 1200x630 preview shown when a page is shared. It is one card for every page and is
+committed, so the site build does not generate it. To change it, edit `scripts/og/build_og.py` and run, from
+`scripts/og/`:
+
+```sh
+python3 build_og.py   # needs Python with fontTools and DejaVu Sans
+node render.mjs       # writes ../../public/og.png
+```
+
+The text is drawn as outlines, so the result does not depend on fonts at render time.
+
 ## Build
 
 ```sh
