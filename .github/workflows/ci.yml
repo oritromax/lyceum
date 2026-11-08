@@ -36,3 +36,6 @@ jobs:
         uses: golangci/golangci-lint-action@v9
         with:
           version: v2.15.0
+          # Build from the Go module proxy: the default binary download from the
+          # release CDN returns 502/504 intermittently and fails the job.
+          install-mode: goinstall

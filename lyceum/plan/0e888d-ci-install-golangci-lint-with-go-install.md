@@ -51,4 +51,7 @@ step, as a separate chore.
 
 ## Progress
 
+1. Done: `install-mode: goinstall` and the explaining comment on the Lint step, `version: v2.15.0` kept.
+2. Done: `actionlint` clean. Not yet proven: the PR run, where both Lint jobs must pass.
+
 ## Log
