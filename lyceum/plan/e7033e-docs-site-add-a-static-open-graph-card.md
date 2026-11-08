@@ -3,8 +3,8 @@ id: e7033e-docs-site-add-a-static-open-graph-card
 type: chore
 title: 'Docs site: add a static Open Graph card'
 branch: chore/e7033e-docs-site-add-a-static-open-graph-card
-status: in-progress
-gate: build
+status: implemented
+gate: close
 files: [docs-site/public/og.png, docs-site/scripts/og/build_og.py, docs-site/scripts/og/render.mjs, docs-site/scripts/og/og.svg, docs-site/astro.config.mjs, docs-site/README.md, .github/workflows/docs-site.yml]
 approvals:
   - gate: plan
