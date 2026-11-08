@@ -3,10 +3,16 @@ id: 0e888d-ci-install-golangci-lint-with-go-install
 type: chore
 title: 'CI: install golangci-lint with go install instead of the release CDN'
 branch: chore/0e888d-ci-install-golangci-lint-with-go-install
-status: planned
-gate: plan
+status: in-progress
+gate: build
 files: [.github/workflows/ci.yml]
-approvals: []
+approvals:
+  - gate: plan
+    hashes:
+      lyceum/plan/0e888d-ci-install-golangci-lint-with-go-install.md: sha256:3b010b92561a28b3fbd8fefb1c53485efa3303c124ea6344ac0d10827fb2a513
+    commit: 13d1d22
+    by: oritromax@gmail.com
+    at: 2026-11-08T12:15:31Z
 ---
 
 ## What and why
