@@ -3,7 +3,7 @@ id: 0c520e-docs-site-generate-llms-txt-and-llms-ful
 type: chore
 title: 'Docs site: generate llms.txt and llms-full.txt at build time'
 branch: chore/0c520e-docs-site-generate-llms-txt-and-llms-ful
-status: implemented
+status: closed
 gate: close
 files: [docs-site/src/lib/llms.mjs, docs-site/src/lib/llms.test.mjs, docs-site/src/pages/llms.txt.ts, docs-site/src/pages/llms-full.txt.ts, "docs-site/src/pages/[...slug].md.ts", docs-site/package.json, docs-site/README.md, .github/workflows/docs-site.yml]
 approvals:
