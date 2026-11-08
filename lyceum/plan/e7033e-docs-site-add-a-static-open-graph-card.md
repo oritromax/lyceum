@@ -3,10 +3,16 @@ id: e7033e-docs-site-add-a-static-open-graph-card
 type: chore
 title: 'Docs site: add a static Open Graph card'
 branch: chore/e7033e-docs-site-add-a-static-open-graph-card
-status: planned
-gate: plan
+status: in-progress
+gate: build
 files: [docs-site/public/og.png, docs-site/scripts/og/build_og.py, docs-site/scripts/og/render.mjs, docs-site/scripts/og/og.svg, docs-site/astro.config.mjs, docs-site/README.md, .github/workflows/docs-site.yml]
-approvals: []
+approvals:
+  - gate: plan
+    hashes:
+      lyceum/plan/e7033e-docs-site-add-a-static-open-graph-card.md: sha256:6611e604d81e417d493021913363d7b3fb919669aa8f799350d2169fc88f4522
+    commit: 260f5bd
+    by: oritromax@gmail.com
+    at: 2026-11-08T10:09:57Z
 ---
 
 ## What and why
