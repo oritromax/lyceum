@@ -53,4 +53,11 @@ site description.
 
 ## Progress
 
+1. Done: `docs-site/public/og.png` committed (1200x630).
+2. Done: `scripts/og/` holds `build_og.py`, `og.svg` and `render.mjs`; the lockup is read from `docs/assets/lockup.svg`. Regenerating from the repo source reproduces `og.svg` and `og.png` byte for byte.
+3. Done: `og:image` (absolute URL), width, height, alt, `twitter:card` and `twitter:image` in the Starlight `head`.
+4. Done: workflow asserts `dist/og.png` and an `og:image` tag on the built home page; `actionlint` clean.
+5. Done: README section on regenerating the card.
+6. Done except the live check: build exits 0 (14 pages); each of the 13 content pages has exactly one `og:image` and one `twitter:card`; `dist/og.png` is 1200x630 and identical to the source. Whether a platform renders the preview can only be seen after the deploy.
+
 ## Log
