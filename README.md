@@ -119,7 +119,7 @@ content.
 | | New project (no code) | Existing code |
 |---|---|---|
 | Next step | The agent interviews you about the project | The agent offers `lyceum understand` to explain the code you have |
-| The interview | It opens with one open question (what are you building, and for whom?), then numbered questions with options, at most two rounds | None |
+| The interview | It opens with one open question (what are you building, and for whom?), then numbered questions with options, at most two rounds; it keeps your brief word for word in `lyceum/spec/brief.md` and asks "Anything to add?" before the first numbered question and again before handing you the approve command | None |
 | What it writes | Spec areas under `lyceum/spec/`, each with acceptance criteria | A baseline record under `lyceum/understand/`, if you accept |
 | Your approval | `lyceum approve project`, covering the whole initial spec | No project-wide approval |
 | How the spec grows | Units add acceptance criteria to existing areas, or register a new area with `lyceum plan --new-area` | One area at a time, as units touch them. Each new area starts with an as-built section written from the code, which you approve with the unit's plan. Untouched areas stay unspecified. |
@@ -169,7 +169,7 @@ Gates: `spec` (you approve) → `build` → `verify` (recorded run) → `close`.
 | Step | Inside the agent | In your terminal |
 |---|---|---|
 | Start | You: `/lyceum-feat Export orders as CSV` | `lyceum add feat "Export orders as CSV"` |
-| Interview, spec, plan | The agent asks its questions, then writes the spec change, acceptance criteria and plan | The same: your agent does the writing |
+| Interview, spec, plan | The agent keeps your brief word for word, asks its questions, confirms nothing is missing, then writes the spec change, acceptance criteria and plan | The same: your agent does the writing |
 | Approve the spec | The agent stops and asks you to run `lyceum approve spec` in your terminal | `lyceum approve spec` |
 | Build | The agent writes the code and tests | The same |
 | Verify | The agent runs `lyceum test` | `lyceum test` |

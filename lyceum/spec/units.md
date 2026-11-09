@@ -159,6 +159,30 @@ Interview rules from the source method apply: never ask what the request already
 concrete alternatives, at most two clarification rounds per document, anything still open becomes
 `[NEEDS CLARIFICATION]`.
 
+**Checkpoints.** The owner's brief is kept verbatim, because a brief sent over several messages is otherwise lost
+to the chat. `init`, `feat`, `bug` and `doc` open and close their interviews with a checkpoint:
+
+- **Opening.** Before any question, the agent saves the owner's raw brief word for word and appends each further
+  message to it: at greenfield `init` to `lyceum/spec/brief.md`, in a unit to a `## Brief` section of its plan. A
+  first reply may be the first of several. The agent then asks once "Anything to add, or shall I proceed?" and asks
+  numbered questions only after the owner says proceed.
+- **Closing.** Once the drafts are written and before the owner is handed the unit's approval (`init`: `lyceum
+  approve project`; `feat`: `approve spec`; `bug`: `approve cause`), the agent asks "Anything to add, or shall I
+  consider the spec ready?". Each addition is appended to the brief, the area files, ACs and plan are updated, and
+  the question is asked again; the approve command is given only once the owner says ready. A doc unit has no
+  approval: its closing checkpoint asks "…shall I consider the doc ready?" before `lyceum test`, and "ready" lets
+  the agent run it.
+- **Ready is not approval.** "Ready" only lets the agent hand over the approve command. Under
+  `approvals.harness_prompt: allow` the agent still runs `lyceum approve` only on a separate request from the owner.
+- **Late additions.** Additions after the interview skip the two-round limit: they go straight into the area files
+  and plan, and anything still uncertain becomes `[NEEDS CLARIFICATION: …]`.
+- **Provenance.** Spec text not stated in the brief is marked `[DERIVED: …]` or `[AGENT-PROPOSED: …]`, so the
+  markers can be checked against the brief.
+
+The brief is frozen with what it led to: `brief.md` is a registered area, so `approve project` hashes it with the
+other area files, and a plan's `## Brief` is in the plan hash of `approve spec` and `approve cause`. A doc plan is
+hashed by no approval. After `project`, a unit's brief goes in its plan, never in `brief.md`.
+
 **After a gate clears.** Any question about whether to proceed is a structured yes/no (yes starts the next
 step, no opens a discussion), never an open prose question. The next step is the one `status` prints.
 
@@ -171,7 +195,7 @@ has the agent write that area's as-built section from the code, citing files and
 ## Greenfield
 
 `init` on an empty project runs the project interview and writes the initial `lyceum/spec/<area>.md` files,
-approved together as gate `project` J. At greenfield the agent writes the area registry rows in `lyceum/SPEC.md`
+with the owner's brief in `lyceum/spec/brief.md` registered as area `brief` (see "Checkpoints"), approved together as gate `project` J. At greenfield the agent writes the area registry rows in `lyceum/SPEC.md`
 itself, since no unit exists yet; `approve project` hashes `SPEC.md` with the area files. After that only the CLI
 changes the registry (`plan --new-area`). The first slice of work is then an `add feat`. Security, deploy and UI
 are optional areas.
@@ -222,3 +246,14 @@ are optional areas.
 | AC155 | Given no unit in flight, nothing pending, and `lyceum/LIBRARY.md` whose first entry is `- feat: CSV export`, when `status` runs, then `Next:` is `lyceum add feat "CSV export"` |
 | AC156 | Given AC9 in an area file, no closed plan listing it in `acs:` and no LIBRARY.md entry naming it, when `check --ci` runs, then a warning names AC9 and the exit code is unaffected by it |
 | AC168 | Given a chore moved to `plan` by `lyceum plan` and its plan approved, when the build is committed and `lyceum test` passes, then `verify` clears and `close` succeeds; until `verify` clears, `close` refuses |
+| AC185 | Given the `lyceum-init` skill, then its greenfield section says to save the owner's brief verbatim to `lyceum/spec/brief.md` before any question, to append each further message to it, and that a first reply may be the first of several |
+| AC186 | Given the `lyceum-init` skill, then it says to ask once "Anything to add, or shall I proceed?" after saving the brief, and to ask numbered questions only after the owner says proceed |
+| AC187 | Given the `lyceum-init` skill, then it says to ask "Anything to add, or shall I consider the spec ready?" after the area files are written and before giving `lyceum approve project`, to append each addition to `brief.md`, update the areas and ACs and ask again, and to give the approve command only after the owner says ready |
+| AC188 | Given the `lyceum-init`, `lyceum-feat` and `lyceum-bug` skills, then each says "ready" only allows handing over the approve command and is not an approval, and that running `lyceum approve` under `approvals.harness_prompt: allow` still needs a separate request from the owner |
+| AC189 | Given the `lyceum-init`, `lyceum-feat`, `lyceum-bug` and `lyceum-doc` skills, then each says additions after the interview skip the two-round limit, go straight into the spec or plan, and leave any remaining uncertainty as `[NEEDS CLARIFICATION: …]` |
+| AC190 | Given the `lyceum-init` skill, then it says to register `brief.md` in the area registry of `lyceum/SPEC.md` as area `brief` |
+| AC191 | Given a greenfield project whose registry lists `spec/brief.md` and one other area, when the owner runs `approve project`, then the event hashes `lyceum/spec/brief.md`; when `brief.md` is then edited and committed, then `check` reports an approval-integrity finding naming it |
+| AC192 | Given the `lyceum-init`, `lyceum-feat` and `lyceum-bug` skills, then each says to mark spec text the brief does not state as `[DERIVED: …]` or `[AGENT-PROPOSED: …]`, naming the brief (`brief.md` or the plan's `## Brief`) as the reference |
+| AC193 | Given the `lyceum-feat`, `lyceum-bug` and `lyceum-doc` skills, then each says to save the owner's brief verbatim to a `## Brief` section of the plan before any question, append each further message, that a first reply may be the first of several, and to ask once "Anything to add, or shall I proceed?" before numbered questions |
+| AC194 | Given the `lyceum-feat` and `lyceum-bug` skills, then each says to ask "Anything to add, or shall I consider the spec ready?" before giving its approve command (`lyceum approve spec`, `lyceum approve cause`), to append each addition to `## Brief`, update the spec and plan and ask again, and to give the command only after the owner says ready |
+| AC195 | Given the `lyceum-doc` skill, then it says to ask "Anything to add, or shall I consider the doc ready?" before running `lyceum test`, to append each addition to `## Brief` and update the doc and ask again, and that a doc has no approval, so "ready" lets the agent run `lyceum test` |

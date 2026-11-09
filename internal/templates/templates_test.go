@@ -214,3 +214,93 @@ func TestSkillRules_AC164(t *testing.T) {
 		}
 	}
 }
+
+// skillSays fails unless each named skill holds every want, compared with oneLine.
+func skillSays(t *testing.T, names []string, want ...string) {
+	t.Helper()
+	for _, name := range names {
+		for _, w := range want {
+			if !strings.Contains(oneLine(Skill(name)), oneLine(w)) {
+				t.Errorf("%s: lacks %q", name, w)
+			}
+		}
+	}
+}
+
+// skillOrder fails unless first appears in the named skill before then.
+func skillOrder(t *testing.T, name, first, then string) {
+	t.Helper()
+	text := oneLine(Skill(name))
+	i, j := strings.Index(text, oneLine(first)), strings.Index(text, oneLine(then))
+	if i < 0 || j < 0 || i > j {
+		t.Errorf("%s: %q does not come before %q", name, first, then)
+	}
+}
+
+// Checkpoints (units.md, "Interviews" → "Checkpoints"): the brief is kept
+// verbatim, and the interview opens and closes with "Anything to add".
+func TestSkillCheckpoints_AC185(t *testing.T) {
+	skillSays(t, []string{"init"}, "save the owner's brief verbatim to `lyceum/spec/brief.md`",
+		"before any other question", "append each further message to it", "A first reply may be the first of several")
+}
+
+func TestSkillCheckpoints_AC186(t *testing.T) {
+	skillSays(t, []string{"init"}, `ask once "Anything to add, or shall I proceed?"`,
+		"ask numbered questions only after the owner says proceed")
+	skillOrder(t, "init", "Anything to add, or shall I proceed?", "After that: numbered questions")
+}
+
+func TestSkillCheckpoints_AC187(t *testing.T) {
+	skillSays(t, []string{"init"}, `ask "Anything to add, or shall I consider the spec ready?"`,
+		"Append each addition to `brief.md`, update the areas and ACs, and ask again",
+		"Give the approve command only after the owner says ready")
+	skillOrder(t, "init", "shall I consider the spec ready?", "Run `lyceum approve project` yourself")
+}
+
+func TestSkillCheckpoints_AC188(t *testing.T) {
+	skillSays(t, []string{"init", "feat", "bug"},
+		`"Ready" is not an approval: it only lets you hand over the approve command`,
+		"`approvals.harness_prompt: allow`, running `lyceum approve` still needs a separate request from the owner")
+}
+
+func TestSkillCheckpoints_AC189(t *testing.T) {
+	skillSays(t, []string{"init", "feat", "bug", "doc"}, "Late additions skip the two-round limit",
+		"they go straight into the", "still uncertain is left as `[NEEDS CLARIFICATION: …]`")
+	skillSays(t, []string{"feat", "bug"}, "go straight into the spec and plan")
+	skillSays(t, []string{"doc"}, "go straight into the doc and plan")
+}
+
+func TestSkillCheckpoints_AC190(t *testing.T) {
+	skillSays(t, []string{"init"}, "Register `brief.md` as area `brief`", "area registry table of `lyceum/SPEC.md`")
+}
+
+func TestSkillCheckpoints_AC192(t *testing.T) {
+	skillSays(t, []string{"init", "feat", "bug"}, "Mark spec text the brief", "`[DERIVED: why]` or `[AGENT-PROPOSED: what]`")
+	skillSays(t, []string{"init"}, "does not state, checked against `lyceum/spec/brief.md`")
+	skillSays(t, []string{"feat", "bug"}, "Mark spec text the brief (the plan's `## Brief`) does not state")
+}
+
+func TestSkillCheckpoints_AC193(t *testing.T) {
+	names := []string{"feat", "bug", "doc"}
+	skillSays(t, names, "before any question, save the owner's brief verbatim to a `## Brief` section of the plan",
+		"append each further message to it", "A first reply may be the first of several",
+		`Ask once "Anything to add, or shall I proceed?"`, "ask numbered questions only after the owner says proceed")
+	for _, name := range names {
+		skillOrder(t, name, "shall I proceed?", "umbered questions, lettered options")
+	}
+}
+
+func TestSkillCheckpoints_AC194(t *testing.T) {
+	skillSays(t, []string{"feat", "bug"}, `ask "Anything to add, or shall I consider the spec ready?"`,
+		"Append each addition to `## Brief`, update the spec and plan, and ask again",
+		"Give the approve command only after the owner says ready")
+	skillOrder(t, "feat", "shall I consider the spec ready?", "Run `lyceum approve spec` yourself")
+	skillOrder(t, "bug", "shall I consider the spec ready?", "Run `lyceum approve cause` yourself")
+}
+
+func TestSkillCheckpoints_AC195(t *testing.T) {
+	skillSays(t, []string{"doc"}, `ask "Anything to add, or shall I consider the doc ready?"`,
+		"Append each addition to `## Brief`, update the doc, and ask again",
+		"A doc has no approval, so \"ready\" lets you run `lyceum test`")
+	skillOrder(t, "doc", "shall I consider the doc ready?", "with a clean tree, run `lyceum test`")
+}

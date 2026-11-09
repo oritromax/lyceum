@@ -41,7 +41,7 @@ Re-running `init` updates the skills and hooks to your installed version. It nev
 
 ## New project
 
-On a project with no code, the agent interviews you. It opens with one open question (what are you building, and for whom?), then numbered questions with options, at most two rounds. It writes spec areas under `lyceum/spec/`, each with acceptance criteria, and you approve the whole initial spec with:
+On a project with no code, the agent interviews you. It opens with one open question (what are you building, and for whom?), then numbered questions with options, at most two rounds; it keeps your brief word for word in `lyceum/spec/brief.md` and asks "Anything to add?" before the first numbered question and again before handing you the approve command. It writes spec areas under `lyceum/spec/`, each with acceptance criteria, and you approve the whole initial spec with:
 
 ```sh
 lyceum approve project
@@ -58,7 +58,7 @@ Gates: `spec` (you approve) → `build` → `verify` (recorded run) → `close`.
 | Step | Inside the agent | In your terminal |
 |---|---|---|
 | Start | You: `/lyceum-feat Export orders as CSV` | `lyceum add feat "Export orders as CSV"` |
-| Interview, spec, plan | The agent asks its questions, then writes the spec change, acceptance criteria and plan | The same: your agent does the writing |
+| Interview, spec, plan | The agent keeps your brief word for word, asks its questions, confirms nothing is missing, then writes the spec change, acceptance criteria and plan | The same: your agent does the writing |
 | Approve the spec | The agent stops and asks you to run `lyceum approve spec` in your terminal | `lyceum approve spec` |
 | Build | The agent writes the code and tests | The same |
 | Verify | The agent runs `lyceum test` | `lyceum test` |

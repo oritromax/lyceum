@@ -1,0 +1,59 @@
+# AC191: given a greenfield project whose registry lists spec/brief.md and one other area, when the owner runs approve project, then the event hashes lyceum/spec/brief.md; when brief.md is then edited and committed, then check reports an approval-integrity finding naming it
+# The brief is a registered area with an empty ACs cell, so approve project hashes it like any area file.
+# ttyrun runs the command on a pty, so stdin and stdout are both a terminal.
+cd $REPO
+
+exec lyceum init
+exec git add -A
+exec git commit -q -m 'lyceum init'
+
+# The interview saved the brief and wrote one area; both are registered.
+cp $WORK/spec-index.md lyceum/SPEC.md
+mkdir lyceum/spec
+cp $WORK/brief.md lyceum/spec/brief.md
+cp $WORK/orders.md lyceum/spec/orders.md
+exec lyceum check --ci
+! stdout 'registry'
+
+# Approving project hashes the brief with the other area file.
+ttyrun $WORK/project.txt 'lyceum approve project'
+stdout '^exit=0$'
+stderr '^  lyceum/spec/brief.md sha256:[0-9a-f]{64}$'
+stderr '^  lyceum/spec/orders.md sha256:'
+grep -count=1 '"gate":"project","hashes":\{"lyceum/SPEC.md":"sha256:[0-9a-f]{64}","lyceum/spec/brief.md":"sha256:[0-9a-f]{64}","lyceum/spec/orders.md":"sha256:[0-9a-f]{64}"\}' lyceum/events.jsonl
+exec git show --name-only --format=%s HEAD
+stdout '^lyceum/spec/brief.md$'
+exec lyceum check --ci
+! stdout 'approval-integrity'
+
+# An edit to the brief after the approval is a finding naming it.
+exec sh -c 'echo "Also CSV export." >> lyceum/spec/brief.md'
+exec git commit -q -am 'edit brief after approval'
+exec sh -c 'lyceum check --ci --json; echo "exit=$?"'
+stdout '^exit=2$'
+stdout '\{"check":"approval-integrity","severity":"fail","message":"the project approval no longer matches lyceum/spec/brief.md: it changed after it was approved","unit":"","path":"lyceum/spec/brief.md",'
+! stdout 'lyceum/spec/orders.md'
+
+-- project.txt --
+project
+-- spec-index.md --
+# Specification index
+
+This file is the index. Load an area file only when the work needs it.
+
+## Area registry
+
+The CLI owns this table.
+
+| Area | File | Covers | ACs |
+|---|---|---|---|
+| brief | `spec/brief.md` | The owner's brief, verbatim | |
+| orders | `spec/orders.md` | Orders and their lifecycle | AC1 |
+-- brief.md --
+# Brief
+
+A shop that takes orders.
+-- orders.md --
+# Orders
+
+| AC1 | Given an order, when it is placed, then it is saved |
