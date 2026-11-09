@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/oritromax/lyceum/internal/check"
+	"github.com/oritromax/lyceum/internal/config"
 	"github.com/oritromax/lyceum/internal/events"
 	"github.com/oritromax/lyceum/internal/gate"
 	"github.com/oritromax/lyceum/internal/gitx"
@@ -14,7 +15,7 @@ import (
 
 // reopenBug first sends open bug p back from close to cause when a file its
 // cause approval hashed changed since (check.CauseDrift), so the owner
-// approves cause again; then sends a bug at cause back to fix when a commit
+// approves cause again; then sends a bug at cause, or still at close, back to fix when a commit
 // after its latest verify clear changes a file that is neither a test
 // (TESTING.md test_files) nor under lyceum/ (check.Reopened), so verify must
 // clear again before approve cause. Each move writes a gate-reopen event with
@@ -43,7 +44,22 @@ func reopenBug(root string, p *unit.Plan) (cause, fix string, err error) {
 			return "", "", err
 		}
 	}
-	fix, err = check.Reopened(root, p, evs)
+	// At close only code in the branch's own diff counts (AC204).
+	var own []string
+	if p.Type == string(gate.Bug) && p.Gate == string(gate.Close) && p.Status != unit.StatusClosed {
+		cfg, err := config.Read(root)
+		if err != nil {
+			return "", "", err
+		}
+		base, err := baseRef(root, cfg.BaseBranch, "reopen the bug", false)
+		if err != nil {
+			return "", "", err
+		}
+		if own, err = gitx.BranchCommitted(root, base); err != nil {
+			return "", "", err
+		}
+	}
+	fix, err = check.Reopened(root, p, evs, own)
 	if err != nil || fix == "" {
 		return cause, "", err
 	}
