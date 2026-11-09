@@ -417,7 +417,8 @@ const RegistryCheck = "registry"
 var acRange = regexp.MustCompile(`AC([0-9]+)(?:\s*[-–]\s*AC([0-9]+))?`)
 
 // Registry reports every area file in lyceum/spec/ with no registry row, and
-// every AC defined in an area file that its row's ACs cell omits.
+// every AC defined in an area file that its row's ACs cell omits, and every
+// AC defined in more than one area file, which no row's omission names.
 func Registry(ctx Context) ([]Finding, error) {
 	rows, err := approval.RegistryRows(ctx.Root)
 	if err != nil {
@@ -428,6 +429,25 @@ func Registry(ctx Context) ([]Finding, error) {
 		return nil, err
 	}
 	slices.Sort(files)
+	// definedIn maps each AC ID to the area files defining it, in file order;
+	// dups are the IDs more than one file defines, in order of first definition.
+	definedIn := map[string][]string{}
+	var dups []string
+	for _, full := range files {
+		f := "lyceum/spec/" + filepath.Base(full)
+		data, err := os.ReadFile(full)
+		if err != nil {
+			return nil, err
+		}
+		for _, def := range acmap.Definitions(f, data) {
+			if in := definedIn[def.ID]; !slices.Contains(in, f) {
+				if len(in) == 1 {
+					dups = append(dups, def.ID)
+				}
+				definedIn[def.ID] = append(in, f)
+			}
+		}
+	}
 	var findings []Finding
 	for _, full := range files {
 		f := "lyceum/spec/" + filepath.Base(full)
@@ -447,7 +467,8 @@ func Registry(ctx Context) ([]Finding, error) {
 		}
 		var missing []string
 		for _, def := range acmap.Definitions(f, data) {
-			if !inRanges(rows[i].ACs, strings.TrimPrefix(def.ID, "AC")) {
+			// A duplicate is its own finding: registering it here would hide it.
+			if len(definedIn[def.ID]) == 1 && !inRanges(rows[i].ACs, strings.TrimPrefix(def.ID, "AC")) {
 				missing = append(missing, def.ID)
 			}
 		}
@@ -456,6 +477,12 @@ func Registry(ctx Context) ([]Finding, error) {
 				Message: fmt.Sprintf("the registry row of %s omits ACs it defines: %s", f, strings.Join(missing, ", ")),
 				Next:    fmt.Sprintf("add them to the row of %s in %s", f, approval.SpecPath)})
 		}
+	}
+	for _, id := range dups {
+		in := definedIn[id]
+		findings = append(findings, Finding{Check: RegistryCheck, Severity: Fail, Path: in[0],
+			Message: fmt.Sprintf("%s is defined in more than one area file: %s", id, strings.Join(in, ", ")),
+			Next:    fmt.Sprintf("keep %s in one area file and give the others the next free AC IDs", id)})
 	}
 	return findings, nil
 }
