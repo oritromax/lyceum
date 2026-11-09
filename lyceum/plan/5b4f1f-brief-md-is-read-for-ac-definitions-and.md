@@ -3,8 +3,8 @@ id: 5b4f1f-brief-md-is-read-for-ac-definitions-and
 type: bug
 title: brief.md is read for AC definitions and counts as an area for the project gate
 branch: fix/5b4f1f-brief-md-is-read-for-ac-definitions-and
-status: in-progress
-gate: diagnose
+status: implemented
+gate: cause
 approvals: []
 files: [internal/acmap/acmap.go, internal/acmap/acmap_test.go, internal/approval/approval.go, internal/check/check.go, internal/cli/approve.go]
 acs: [AC196]
