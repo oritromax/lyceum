@@ -314,10 +314,11 @@ func payload(ts *testscript.TestScript, neg bool, args []string) {
 // hookRun implements the script command `hookrun <settings.json>`: the file is
 // valid JSON whose hooks.PreToolUse holds exactly one hook running "lyceum hook
 // pre-tool". It runs that hook's command with sh -c, as a harness runs it, on
-// the stdin set by `stdin`, and fails when it exits non-zero.
+// the stdin set by `stdin`, and fails when it exits non-zero. `! hookrun`
+// fails unless it exits 2, the status a harness blocks the call on.
 func hookRun(ts *testscript.TestScript, neg bool, args []string) {
-	if neg || len(args) != 1 {
-		ts.Fatalf("usage: hookrun <settings.json>")
+	if len(args) != 1 {
+		ts.Fatalf("usage: [!] hookrun <settings.json>")
 	}
 	var settings struct {
 		Hooks struct {
@@ -347,7 +348,15 @@ func hookRun(ts *testscript.TestScript, neg bool, args []string) {
 	if len(commands) != 1 {
 		ts.Fatalf("%s has %d lyceum hooks; want 1", args[0], len(commands))
 	}
-	ts.Check(ts.Exec("sh", "-c", commands[0]))
+	err := ts.Exec("sh", "-c", commands[0])
+	if !neg {
+		ts.Check(err)
+		return
+	}
+	var exit *exec.ExitError
+	if !errors.As(err, &exit) || exit.ExitCode() != 2 {
+		ts.Fatalf("%s's lyceum hook: %v; want exit status 2", args[0], err)
+	}
 }
 
 // setupScript isolates each script: its own HOME, a PATH without the host's
