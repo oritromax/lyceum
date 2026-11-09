@@ -1,0 +1,64 @@
+# AC202: given one area file that defines the same AC ID more than once (two rows, two bullets, or one of each), when check runs, then it fails naming the ID and the file, with a Next to give the repeat the next free AC ID
+cd $REPO
+exec lyceum init
+mkdir lyceum/spec
+cp $WORK/spec.md lyceum/SPEC.md
+
+# Two | AC1 | rows in one file: check --ci fails naming AC1 and the file; locally it is reported.
+cp $WORK/rows.md lyceum/spec/orders.md
+exec git add -A
+exec git commit -q -m 'AC1 twice as rows'
+exec sh -c 'lyceum check --ci; echo "exit=$?"'
+stdout '^exit=2$'
+stderr 'registry: AC1 is defined more than once in lyceum/spec/orders.md$'
+stderr '^Next: give the repeat of AC1 in lyceum/spec/orders.md the next free AC ID$'
+! stderr 'more than one area file'
+exec lyceum check
+stdout 'AC1 is defined more than once in lyceum/spec/orders.md$'
+
+# Two - **AC1** bullets in one file.
+cp $WORK/bullets.md lyceum/spec/orders.md
+exec git add -A
+exec git commit -q -m 'AC1 twice as bullets'
+exec sh -c 'lyceum check --ci; echo "exit=$?"'
+stdout '^exit=2$'
+stderr 'registry: AC1 is defined more than once in lyceum/spec/orders.md$'
+stderr '^Next: give the repeat of AC1 in lyceum/spec/orders.md the next free AC ID$'
+
+# One row and one bullet in one file.
+cp $WORK/mixed.md lyceum/spec/orders.md
+exec git add -A
+exec git commit -q -m 'AC1 as a row and a bullet'
+exec sh -c 'lyceum check --ci; echo "exit=$?"'
+stdout '^exit=2$'
+stderr 'registry: AC1 is defined more than once in lyceum/spec/orders.md$'
+stderr '^Next: give the repeat of AC1 in lyceum/spec/orders.md the next free AC ID$'
+
+-- spec.md --
+# Specification index
+
+## Area registry
+
+| Area | File | Covers | ACs |
+|---|---|---|---|
+| orders | `spec/orders.md` | Orders | AC1 |
+-- rows.md --
+# Orders
+
+| ID | Criterion |
+|---|---|
+| AC1 | Given a, then b |
+| AC1 | Given c, then d |
+-- bullets.md --
+# Orders
+
+- **AC1** Given a, then b
+- **AC1** Given c, then d
+-- mixed.md --
+# Orders
+
+| ID | Criterion |
+|---|---|
+| AC1 | Given a, then b |
+
+- **AC1** Given c, then d
