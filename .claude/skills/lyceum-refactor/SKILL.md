@@ -91,8 +91,8 @@ No code changes at this gate. Only test files (TESTING.md `test_files`) and `lyc
 
 ## Gate `close`
 
-Once `verify` clears, run `lyceum close`. It sets the plan to closed and opens a PR, or prints the push and merge
-commands. A refactor changes only `cites:` in the spec; `close` refuses any other spec diff.
+Once `verify` clears, run `lyceum close`. It sets the plan to closed, pushes the branch and opens a PR, or prints the
+commands left to run. A refactor changes only `cites:` in the spec; `close` refuses any other spec diff.
 
 ## Approvals are the owner's
 
