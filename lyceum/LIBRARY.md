@@ -8,3 +8,4 @@
 - bug: check action retries the release download and falls back to the REST API (AC199)
 - bug: close pushes the unit branch before it opens the pull request (AC200)
 - bug: a change to cause-approved files at close sends the bug back to cause (AC201)
+- bug: an AC ID defined twice in one area file fails check (AC202)

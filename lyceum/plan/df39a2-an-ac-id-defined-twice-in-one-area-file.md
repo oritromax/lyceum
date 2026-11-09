@@ -6,6 +6,9 @@ branch: fix/df39a2-an-ac-id-defined-twice-in-one-area-file
 status: in-progress
 gate: diagnose
 approvals: []
+acs: [AC202]
+files:
+  - internal/check/check.go
 ---
 
 ## Brief
@@ -34,10 +37,27 @@ Probe on main at `d6362ab`: an area file `lyceum/spec/orders.md` with two `| AC1
 - **Trigger:** define `| AC1 |` twice in one area file, register AC1, run `check --ci`.
 - **Out of scope:** `brief.md` (defines no ACs, AC196); IDs inside code fences.
 
+## Root cause
+
+`check.Registry` (`internal/check/check.go`) builds `definedIn`, the area files defining each AC ID, from
+`acmap.Definitions`. It appends a file only when it is not already listed (`!slices.Contains(in, f)`), so a
+second definition in the same file is dropped, and the only duplicate finding is the cross-file one (`dups`,
+AC198), which needs two distinct files. Nothing else counts definitions per file, so a repeat in one file
+leaves no finding. The repro `ac202_duplicate_ac_id_in_one_file` defines AC1 twice in `orders.md` (rows,
+bullets, a row and a bullet) and expects `check --ci` exit 2 with the finding; on the current code it exits 0.
+
 ## Spec delta
+
+- AC202 (`lyceum/spec/enforcement.md`, registry range in `lyceum/SPEC.md`): an AC ID defined more than once in
+  one area file fails `registry`, naming the ID and the file, `Next:` gives the repeat the next free AC ID.
+  AC198 unchanged.
 
 ## Steps
 
 ## Progress
+
+- repro cleared: `TestScripts/ac202_duplicate_ac_id_in_one_file` fails on the current code (`exit=0`).
+- fix: `Registry` counts definitions per file and adds one `registry` Fail per ID a file repeats, after the
+  AC198 findings; `definedIn` and the AC198 path are untouched.
 
 ## Log

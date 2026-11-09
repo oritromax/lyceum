@@ -425,7 +425,8 @@ var acRange = regexp.MustCompile(`AC([0-9]+)(?:\s*[-–]\s*AC([0-9]+))?`)
 
 // Registry reports every area file in lyceum/spec/ with no registry row, and
 // every AC defined in an area file that its row's ACs cell omits, and every
-// AC defined in more than one area file, which no row's omission names.
+// AC defined in more than one area file, which no row's omission names, and
+// every AC one area file defines more than once.
 func Registry(ctx Context) ([]Finding, error) {
 	rows, err := approval.RegistryRows(ctx.Root)
 	if err != nil {
@@ -438,15 +439,23 @@ func Registry(ctx Context) ([]Finding, error) {
 	slices.Sort(files)
 	// definedIn maps each AC ID to the area files defining it, in file order;
 	// dups are the IDs more than one file defines, in order of first definition.
+	// repeats are the findings for IDs one file defines more than once.
 	definedIn := map[string][]string{}
 	var dups []string
+	var repeats []Finding
 	for _, full := range files {
 		f := "lyceum/spec/" + filepath.Base(full)
 		data, err := os.ReadFile(full)
 		if err != nil {
 			return nil, err
 		}
+		seen := map[string]int{}
 		for _, def := range acmap.Definitions(f, data) {
+			if seen[def.ID]++; seen[def.ID] == 2 {
+				repeats = append(repeats, Finding{Check: RegistryCheck, Severity: Fail, Path: f,
+					Message: fmt.Sprintf("%s is defined more than once in %s", def.ID, f),
+					Next:    fmt.Sprintf("give the repeat of %s in %s the next free AC ID", def.ID, f)})
+			}
 			if in := definedIn[def.ID]; !slices.Contains(in, f) {
 				if len(in) == 1 {
 					dups = append(dups, def.ID)
@@ -491,7 +500,7 @@ func Registry(ctx Context) ([]Finding, error) {
 			Message: fmt.Sprintf("%s is defined in more than one area file: %s", id, strings.Join(in, ", ")),
 			Next:    fmt.Sprintf("keep %s in one area file and give the others the next free AC IDs", id)})
 	}
-	return findings, nil
+	return append(findings, repeats...), nil
 }
 
 // inRanges reports whether AC number id falls in cell, such as "AC1–AC4, AC9".
