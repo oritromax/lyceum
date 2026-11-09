@@ -63,11 +63,22 @@ type Definition struct {
 	Closed bool
 }
 
-// Definitions returns the ACs defined in the text of an area file, in file
-// order, one per defining line: a table row `| ACn |` or a bullet led by the
-// bold ID, `- **ACn**` or `* **ACn**`. An ID anywhere else is a mention,
-// not a definition. This is the only reader of the two forms.
-func Definitions(data []byte) []Definition {
+// IsBrief reports whether file, an area file path, is the owner's brief,
+// lyceum/spec/brief.md. It is registered and hashed like an area but bears
+// no AC (units.md, "Checkpoints").
+func IsBrief(file string) bool {
+	return path.Base(filepath.ToSlash(file)) == "brief.md"
+}
+
+// Definitions returns the ACs defined in data, the text of the area file
+// file, in file order, one per defining line: a table row `| ACn |` or a
+// bullet led by the bold ID, `- **ACn**` or `* **ACn**`. An ID anywhere else
+// is a mention, not a definition, and the brief (IsBrief) defines none. This
+// is the only reader of the two forms.
+func Definitions(file string, data []byte) []Definition {
+	if IsBrief(file) {
+		return nil
+	}
 	lines := slices.Collect(strings.Lines(string(data)))
 	var defs []Definition
 	for i, line := range lines {
@@ -106,7 +117,7 @@ func OpenSpecACs(specDir string) ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		for _, def := range Definitions(data) {
+		for _, def := range Definitions(f, data) {
 			if def.Closed {
 				closed[def.ID] = true
 			}
@@ -128,7 +139,7 @@ func SpecACs(specDir string) ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		for _, def := range Definitions(data) {
+		for _, def := range Definitions(f, data) {
 			seen[def.ID] = true
 		}
 	}
