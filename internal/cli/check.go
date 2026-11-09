@@ -85,14 +85,14 @@ func runCheck(cmd *cobra.Command, args []string) error {
 	}
 	// Locally, a bug at cause with a code commit after its verify clear goes
 	// back to fix first, so the replay sees the gate-reopen event.
-	reopened := ""
+	toCause, reopened := "", ""
 	if !ci {
-		if reopened, err = reopenBug(root, p); err != nil {
+		if toCause, reopened, err = reopenBug(root, p); err != nil {
 			return err
 		}
 	}
-	if reopened != "" && !asJSON {
-		_, _ = io.WriteString(cmd.OutOrStdout(), reopenedLine(p.ID, reopened))
+	if !asJSON && (toCause != "" || reopened != "") {
+		_, _ = io.WriteString(cmd.OutOrStdout(), reopenedLines(p.ID, toCause, reopened))
 	}
 	evs, err := events.Read(root)
 	if err != nil {

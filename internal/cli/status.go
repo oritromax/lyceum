@@ -118,7 +118,7 @@ func runStatus(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	reopened, err := reopenBug(root, p)
+	toCause, reopened, err := reopenBug(root, p)
 	if err != nil {
 		return err
 	}
@@ -242,8 +242,8 @@ func runStatus(cmd *cobra.Command, args []string) error {
 
 	asJSON, _ := cmd.Flags().GetBool("json")
 	if !asJSON {
-		if reopened != "" {
-			_, _ = io.WriteString(cmd.OutOrStdout(), reopenedLine(p.ID, reopened))
+		if toCause != "" || reopened != "" {
+			_, _ = io.WriteString(cmd.OutOrStdout(), reopenedLines(p.ID, toCause, reopened))
 		}
 		_, _ = io.WriteString(cmd.OutOrStdout(), statusText(units, pending, all))
 		_, _ = io.WriteString(cmd.OutOrStdout(), repoGatesText(gates, interview))

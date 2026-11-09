@@ -133,6 +133,8 @@ func ApprovalIntegrity(ctx Context) ([]Finding, error) {
 		latest[k] = e
 	}
 
+	// A bug sent back to cause has its cause approval pending again (AC201).
+	pending := ctx.Plan != nil && CausePending(ctx.Events, ctx.Plan.ID)
 	var findings []Finding
 	seen := map[string]bool{}
 	for _, k := range order {
@@ -152,6 +154,9 @@ func ApprovalIntegrity(ctx Context) ([]Finding, error) {
 				continue
 			}
 			g, _ := e.Fields["gate"].(string)
+			if pending && e.Unit == ctx.Plan.ID && g == string(gate.Cause) {
+				continue
+			}
 			want, _ := e.Fields["hashes"].(map[string]any)
 			planPath := ""
 			if ctx.Plan != nil && e.Unit == ctx.Plan.ID {
@@ -294,6 +299,8 @@ func CauseApproval(ctx Context) ([]Finding, error) {
 		verified = verified || e.Type == "gate-clear" && g == string(gate.Verify)
 		approved = approved || e.Type == "approve" && g == string(gate.Cause)
 	}
+	// A cause approval the bug went back from no longer counts (AC201).
+	approved = approved && !CausePending(ctx.Events, ctx.Plan.ID)
 	if !verified || approved {
 		return nil, nil
 	}
@@ -522,7 +529,7 @@ type expected struct {
 // mechanical gate it cleared, when the unit was at that gate or at the work
 // step before it (clearedTo), and is skipped otherwise; any later event
 // carrying status sets it. A gate-reopen event moves a bug at cause
-// back to fix, or a chore at build to plan, and sets its status, and is
+// back to fix, an open bug at close back to cause, or a chore at build to plan, and sets its status, and is
 // skipped otherwise. An amend event moves the unit
 // back to the code-opening gate it names, or a refactor to intent,
 // and sets its status;
@@ -559,10 +566,12 @@ func replay(evs []events.Event, id string) (exp expected, ok bool, err error) {
 			exp.gate = next
 		}
 		if e.Type == "gate-reopen" {
-			// The reopens there are: a bug back from cause to fix,
+			// The reopens there are: a bug back from cause to fix, an open
+			// bug back from close to cause (AC201),
 			// and `lyceum plan` moving a trivial chore from build to plan.
 			g, _ := e.Fields["gate"].(string)
-			bug := exp.typ == string(gate.Bug) && exp.gate == string(gate.Cause) && g == string(gate.Fix)
+			bug := exp.typ == string(gate.Bug) && (exp.gate == string(gate.Cause) && g == string(gate.Fix) ||
+				exp.gate == string(gate.Close) && exp.status != unit.StatusClosed && g == string(gate.Cause))
 			chore := unit.Tier(exp.typ, exp.gate, exp.approvals) == gate.Chore && exp.gate == string(gate.Build) && g == string(gate.Plan)
 			if bug || chore {
 				exp.gate = g
@@ -1022,10 +1031,24 @@ func TestingDrift(ctx Context) ([]Finding, error) {
 // ReopenCheck names the reopen check in findings.
 const ReopenCheck = "reopen"
 
-// Reopen reports a bug at cause with a code commit after its verify clear
-// (Reopened), which sends it back to fix. Locally the CLI
+// Reopen reports a bug at close whose cause approval no longer matches
+// (CauseDrift), which sends it back to cause, or a bug at cause with a code
+// commit after its verify clear (Reopened), which sends it back to fix. Locally the CLI
 // writes the gate-reopen first, so only --ci finds it.
 func Reopen(ctx Context) ([]Finding, error) {
+	drift, err := CauseDrift(ctx.Root, ctx.PlanPath, ctx.Plan, ctx.Events)
+	if err != nil {
+		return nil, err
+	}
+	if len(drift) > 0 {
+		return []Finding{{
+			Check:    ReopenCheck,
+			Severity: Fail,
+			Message:  CauseDriftReason(drift) + "; the owner approves cause again",
+			Unit:     ctx.Plan.ID,
+			Next:     `run "lyceum status" locally so the bug goes back to cause, then run "lyceum approve cause" yourself in a terminal`,
+		}}, nil
+	}
 	reason, err := Reopened(ctx.Root, ctx.Plan, ctx.Events)
 	if err != nil || reason == "" {
 		return nil, err
@@ -1175,6 +1198,57 @@ func Reopened(root string, p *unit.Plan, evs []events.Event) (string, error) {
 		return "", nil
 	}
 	return fmt.Sprintf("a commit after verify cleared at %s changes files that are not tests: %s", since, strings.Join(code, ", ")), nil
+}
+
+// CauseDrift returns the files bug p's latest counting approve cause hashed
+// that changed or are gone since, sorted, when p is at close and not closed
+// (AC201): a commit after the approval, such as a merge of main, changed what the
+// owner approved, so the bug goes back to cause. planPath is p's plan file.
+func CauseDrift(root, planPath string, p *unit.Plan, evs []events.Event) ([]string, error) {
+	if !guard.ReopenEnabled {
+		return nil, nil
+	}
+	if p == nil || p.Type != string(gate.Bug) || p.Gate != string(gate.Close) || p.Status == unit.StatusClosed {
+		return nil, nil
+	}
+	var want map[string]any
+	for _, e := range Counting(evs) {
+		if e.Type == "approve" && e.Unit == p.ID && e.Fields["gate"] == string(gate.Cause) && e.Fields["counts"] != false {
+			want, _ = e.Fields["hashes"].(map[string]any)
+		}
+	}
+	var drift []string
+	for _, f := range slices.Sorted(maps.Keys(want)) {
+		got, err := approval.Hashes(root, planPath, gate.Cause, []string{f})
+		if err != nil && !errors.Is(err, fs.ErrNotExist) {
+			return nil, err
+		}
+		if err != nil || got[f] != want[f] {
+			drift = append(drift, f)
+		}
+	}
+	return drift, nil
+}
+
+// CauseDriftReason is the reason a bug goes back to cause for the files drift.
+func CauseDriftReason(drift []string) string {
+	return "a commit after approve cause changes files it hashed: " + strings.Join(drift, ", ")
+}
+
+// CausePending says the cause approval of bug id is no longer relied on: a
+// gate-reopen event of the unit follows its latest approve cause (AC201).
+func CausePending(evs []events.Event, id string) bool {
+	pending := false
+	for _, e := range Counting(evs) {
+		switch {
+		case e.Unit != id:
+		case e.Type == "gate-reopen":
+			pending = true
+		case e.Type == "approve" && e.Fields["gate"] == string(gate.Cause) && e.Fields["counts"] != false:
+			pending = false
+		}
+	}
+	return pending
 }
 
 // codeIn returns the paths in paths that are code (codepath.IsCode), in order.

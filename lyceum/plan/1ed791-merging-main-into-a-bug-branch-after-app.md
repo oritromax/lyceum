@@ -6,6 +6,16 @@ branch: fix/1ed791-merging-main-into-a-bug-branch-after-app
 status: in-progress
 gate: diagnose
 approvals: []
+acs: [AC201]
+files:
+  - internal/check/check.go
+  - internal/cli/reopen.go
+  - internal/cli/approve.go
+  - internal/cli/check.go
+  - internal/cli/status.go
+  - internal/cli/test.go
+  - internal/templates/skills/bug/SKILL.md
+  - .agents/skills/lyceum-bug/SKILL.md
 ---
 
 ## Brief
@@ -51,7 +61,27 @@ the owner chose:
 - **Out of scope:** a merge of main that changes code still reopens the bug to `fix` (verify must re-run on the
   merged code); that is intended.
 
+## Root cause
+
+- The only reopen for a bug is `check.Reopened`, which fires at gate `cause` (before approval) on a code commit
+  after verify, and sends the bug to `fix`. Nothing handles a bug at `close`: `reopenBug` (called by `status`,
+  `test`, `approve` and local `check`) returns early, and the AC17 replay accepts a `gate-reopen` only from `cause`
+  to `fix`.
+- So at `close`, a changed cause-hashed file falls through to `ApprovalIntegrity`, whose only `Next` is "restore",
+  and the old `approve cause` keeps counting (`CauseApproval` sees it), so no step asks for a new approval. With
+  `approve cause` refused at `close` and `amend` refused for bugs, there is no way out.
+- The premise "code changes at close already reopen to fix" does not hold on main: `Reopened` checks
+  `gate == cause` only, so at `close` a code change also lands on `approval-integrity`
+  [DERIVED: read from internal/check/check.go]. The fix covers it by composition: drift on a hashed code file
+  reopens to `cause`, then the existing rule sends it on to `fix`.
+- The repro (`TestScripts/ac201_bug_merge_reopens_cause`) approves cause with `lyceum/SPEC.md` in the hashes,
+  commits a change to it, and expects `status` to print `Back to cause`; on main, `status` stays at `close` and
+  lists "restore lyceum/SPEC.md" as the pending step.
+
 ## Spec delta
+
+- AC201 added to `lyceum/spec/enforcement.md` and its registry range in `lyceum/SPEC.md`; the Reopen check row
+  describes the reopen to `cause`. The bug skill's `close` section says what to do after it.
 
 ## Steps
 
