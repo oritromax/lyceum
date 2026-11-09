@@ -3,8 +3,8 @@ id: d264a8-ac-ids-are-not-checked-for-uniqueness-ac
 type: bug
 title: AC IDs are not checked for uniqueness across area files
 branch: fix/d264a8-ac-ids-are-not-checked-for-uniqueness-ac
-status: in-progress
-gate: fix
+status: implemented
+gate: cause
 approvals: []
 files: [internal/check/check.go]
 acs: [AC198]
