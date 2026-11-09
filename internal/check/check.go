@@ -439,7 +439,7 @@ func Registry(ctx Context) ([]Finding, error) {
 		if err != nil {
 			return nil, err
 		}
-		for _, def := range acmap.Definitions(data) {
+		for _, def := range acmap.Definitions(f, data) {
 			if in := definedIn[def.ID]; !slices.Contains(in, f) {
 				if len(in) == 1 {
 					dups = append(dups, def.ID)
@@ -466,7 +466,7 @@ func Registry(ctx Context) ([]Finding, error) {
 			return nil, err
 		}
 		var missing []string
-		for _, def := range acmap.Definitions(data) {
+		for _, def := range acmap.Definitions(f, data) {
 			// A duplicate is its own finding: registering it here would hide it.
 			if len(definedIn[def.ID]) == 1 && !inRanges(rows[i].ACs, strings.TrimPrefix(def.ID, "AC")) {
 				missing = append(missing, def.ID)
