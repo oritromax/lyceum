@@ -52,9 +52,13 @@ var initHarnesses = []initHarness{
 		trust: "Pi loads project extensions only in a trusted project; trust this project in Pi, or the hook won't load"},
 }
 
-// command is the hook command h's settings file runs.
+// command is the hook command h's settings file runs. With lyceum not on
+// PATH it exits 2, which the harness blocks the call on, naming the install
+// commands; a bare call would exit 127, which lets the call through.
 func (h initHarness) command() string {
-	return hookCommandPrefix + " --harness " + h.name
+	return "command -v lyceum >/dev/null 2>&1 || { echo 'Lyceum blocked this tool call: lyceum is not on PATH, " +
+		"so its hook cannot check it. " + templates.InstallHint + "' >&2; exit 2; }; " +
+		hookCommandPrefix + " --harness " + h.name
 }
 
 // writeHook installs h's pre-tool hook under root: Lyceum's entry merged into
@@ -84,6 +88,20 @@ func writeHook(root string, h initHarness, r *initReport) error {
 func (h initHarness) wired(root string) bool {
 	data, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(h.hook)))
 	return err == nil && (h.shim != "" || strings.Contains(string(data), hookCommandPrefix))
+}
+
+// lyceumOnPath reports whether a lyceum binary is on PATH outside npx's
+// cache, which npx puts on PATH only while it runs.
+func lyceumOnPath() bool {
+	for _, d := range filepath.SplitList(os.Getenv("PATH")) {
+		if d == "" || strings.Contains(filepath.ToSlash(d), "/_npx/") {
+			continue
+		}
+		if _, err := exec.LookPath(filepath.Join(d, "lyceum")); err == nil {
+			return true
+		}
+	}
+	return false
 }
 
 // detected says where h was found in the repo at root, or "" when it wasn't.

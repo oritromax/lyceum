@@ -304,3 +304,18 @@ func TestSkillCheckpoints_AC195(t *testing.T) {
 		"A doc has no approval, so \"ready\" lets you run `lyceum test`")
 	skillOrder(t, "doc", "shall I consider the doc ready?", "with a clean tree, run `lyceum test`")
 }
+
+// The pre-commit hook and both shims carry InstallHint word for word, and the
+// shims deny when spawning lyceum finds no binary (AC197).
+func TestInstallHint_AC197(t *testing.T) {
+	for name, text := range map[string]string{"pre-commit": PreCommit, "opencode-plugin.js": OpenCodePlugin, "pi-extension.ts": PiExtension} {
+		if !strings.Contains(text, InstallHint) {
+			t.Errorf("%s lacks the install hint %q", name, InstallHint)
+		}
+	}
+	for name, text := range map[string]string{"opencode-plugin.js": OpenCodePlugin, "pi-extension.ts": PiExtension} {
+		if !strings.Contains(text, `?.code === "ENOENT"`) {
+			t.Errorf("%s does not deny when lyceum is not found", name)
+		}
+	}
+}

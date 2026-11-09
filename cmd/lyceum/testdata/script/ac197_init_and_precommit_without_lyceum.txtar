@@ -1,0 +1,39 @@
+# AC197: given lyceum will not be on PATH after init, then init warns naming the install commands, and the pre-commit hook says it did not check the commit and lets it through
+cd $REPO
+
+# A PATH holding only sh and git, and copies of lyceum in npx's cache and elsewhere.
+mkdir $WORK/bin
+exec sh -c 'for t in sh git; do ln -s "$(command -v $t)" "$WORK/bin/$t"; done'
+exec sh -c 'mkdir -p "$WORK/.npm/_npx/abc/node_modules/.bin" "$WORK/other" && cp "$(command -v lyceum)" "$WORK/.npm/_npx/abc/node_modules/.bin/lyceum" && cp "$(command -v lyceum)" "$WORK/other/lyceum"'
+
+# Run from npx's cache, which npx puts on PATH only while it runs: init warns.
+env PATH=$WORK/.npm/_npx/abc/node_modules/.bin:$WORK/bin
+stdin $WORK/defaults.txt
+exec $WORK/.npm/_npx/abc/node_modules/.bin/lyceum init --harness claude
+stderr 'Warning: lyceum will not be on PATH after this run'
+stderr 'Install it with npm i -g lyceum, brew install oritromax/tap/lyceum or go install github\.com/oritromax/lyceum/cmd/lyceum@latest\.$'
+grep 'command -v lyceum' .claude/settings.json
+! grep '_npx' .claude/settings.json
+! grep '_npx' .git/hooks/pre-commit
+
+# Run by path with no lyceum on PATH at all: init warns.
+env PATH=$WORK/bin
+exec $WORK/other/lyceum init
+stderr '^Warning: lyceum will not be on PATH after this run'
+
+# The pre-commit hook names the install commands, exits 0, and the commit is made.
+exec git add -A
+exec git commit -q -m 'lyceum init'
+stderr '^Lyceum did not check this commit: lyceum is not on PATH\. Install it with npm i -g lyceum, '
+! stderr 'not found'
+exec git log -1 --format=%s
+stdout '^lyceum init$'
+
+# With a lyceum on PATH outside npx's cache, init does not warn.
+env PATH=$WORK/other:$WORK/bin
+exec $WORK/.npm/_npx/abc/node_modules/.bin/lyceum init
+! stderr 'Warning'
+
+-- defaults.txt --
+
+

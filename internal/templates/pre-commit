@@ -1,4 +1,8 @@
 # lyceum:start
 # Lyceum's check, written by "lyceum init": it warns, and the commit goes ahead.
-lyceum check --pre-commit || true
+if command -v lyceum >/dev/null 2>&1; then
+  lyceum check --pre-commit || true
+else
+  echo 'Lyceum did not check this commit: lyceum is not on PATH. Install it with npm i -g lyceum, brew install oritromax/tap/lyceum or go install github.com/oritromax/lyceum/cmd/lyceum@latest.' >&2
+fi
 # lyceum:end

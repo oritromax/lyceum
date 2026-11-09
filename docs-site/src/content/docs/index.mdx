@@ -94,7 +94,7 @@ Any other agent that reads `AGENTS.md` and `.agents/skills/` can follow the work
 
 <Tabs>
   <TabItem label="npx">
-    Run it once without installing:
+    Run `init` once without installing. The hooks it wires call `lyceum` on every tool call and commit, so also install it globally (any other tab): without it the harness hooks block every tool call and the pre-commit check is skipped.
 
     ```sh
     npx lyceum init

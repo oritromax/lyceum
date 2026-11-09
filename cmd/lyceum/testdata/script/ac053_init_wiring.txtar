@@ -18,7 +18,7 @@ stdout '^Wired Pi\n  Pi loads project extensions only in a trusted project; trus
 cmp .claude/settings.json $WORK/merged-settings.json
 cmp .codex/hooks.json $WORK/codex-hooks.json
 grep '"matcher": "shell\|write\|edit"' .commandcode/settings.json
-grep '"command": "lyceum hook pre-tool --harness commandcode"' .commandcode/settings.json
+grep '"command": "command -v lyceum .*; lyceum hook pre-tool --harness commandcode"' .commandcode/settings.json
 cmp .opencode/plugins/lyceum.js $TEMPLATES/opencode-plugin.js
 cmp .pi/extensions/lyceum.ts $TEMPLATES/pi-extension.ts
 grep 'spawnSync\("lyceum", \["hook", "pre-tool", "--harness", "opencode"\]' .opencode/plugins/lyceum.js
@@ -101,7 +101,7 @@ cmp .codex/hooks.json $WORK/broken.json
         "hooks": [
           {
             "type": "command",
-            "command": "lyceum hook pre-tool --harness claude"
+            "command": "command -v lyceum >/dev/null 2>&1 || { echo 'Lyceum blocked this tool call: lyceum is not on PATH, so its hook cannot check it. Install it with npm i -g lyceum, brew install oritromax/tap/lyceum or go install github.com/oritromax/lyceum/cmd/lyceum@latest.' >&2; exit 2; }; lyceum hook pre-tool --harness claude"
           }
         ]
       }
@@ -117,7 +117,7 @@ cmp .codex/hooks.json $WORK/broken.json
         "hooks": [
           {
             "type": "command",
-            "command": "lyceum hook pre-tool --harness codex"
+            "command": "command -v lyceum >/dev/null 2>&1 || { echo 'Lyceum blocked this tool call: lyceum is not on PATH, so its hook cannot check it. Install it with npm i -g lyceum, brew install oritromax/tap/lyceum or go install github.com/oritromax/lyceum/cmd/lyceum@latest.' >&2; exit 2; }; lyceum hook pre-tool --harness codex"
           }
         ]
       }

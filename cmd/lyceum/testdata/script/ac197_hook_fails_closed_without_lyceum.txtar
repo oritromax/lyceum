@@ -1,0 +1,37 @@
+# AC197: given the hooks init wrote and no lyceum on PATH, when a harness runs its hook, then it exits 2, which the harness blocks on, with a message naming the install commands
+cd $REPO
+exec lyceum init --harness claude --harness codex --harness commandcode
+exec git add -A
+exec git commit -q -m 'lyceum init'
+exec lyceum add feat 'CSV export'
+
+# A PATH holding only sh: lyceum is not on it, as after "npx lyceum init" with no global install.
+mkdir $WORK/bin
+exec sh -c 'ln -s "$(command -v sh)" "$WORK/bin/sh"'
+env PATH=$WORK/bin
+
+# Claude Code.
+payload claude/write.json $WORK/p.json /repo/note.txt=/repo/src/x.ts
+stdin $WORK/p.json
+! hookrun .claude/settings.json
+stderr 'Lyceum blocked this tool call: lyceum is not on PATH'
+stderr 'npm i -g lyceum'
+stderr 'brew install oritromax/tap/lyceum'
+stderr 'go install github\.com/oritromax/lyceum/cmd/lyceum@latest'
+! stderr 'not found'
+
+# Codex.
+payload codex/write.json $WORK/p.json /repo/src/a.txt=/repo/src/x.ts
+stdin $WORK/p.json
+! hookrun .codex/hooks.json
+stderr 'Lyceum blocked this tool call: lyceum is not on PATH'
+stderr 'npm i -g lyceum'
+! stderr 'not found'
+
+# Command Code.
+payload commandcode/write.json $WORK/p.json /repo/note.txt=/repo/src/x.ts
+stdin $WORK/p.json
+! hookrun .commandcode/settings.json
+stderr 'Lyceum blocked this tool call: lyceum is not on PATH'
+stderr 'npm i -g lyceum'
+! stderr 'not found'

@@ -226,6 +226,10 @@ func runInit(cmd *cobra.Command, _ []string) error {
 		}
 		_, _ = io.WriteString(cmd.OutOrStdout(), b.String())
 	}
+	if !lyceumOnPath() {
+		_, _ = io.WriteString(cmd.ErrOrStderr(), "Warning: lyceum will not be on PATH after this run (npx's copy does not stay on it), "+
+			"so the hooks init wired block every tool call and the pre-commit hook checks nothing. "+templates.InstallHint+"\n")
+	}
 	out.Writer{Stdout: cmd.OutOrStdout(), Stderr: cmd.ErrOrStderr(), JSON: asJSON}.
 		Result(out.Result{Next: next, Data: data})
 	return nil

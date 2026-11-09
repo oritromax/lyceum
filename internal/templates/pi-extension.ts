@@ -8,11 +8,17 @@ export default function (pi: any) {
       input: JSON.stringify({ toolName: event.toolName, toolCallId: event.toolCallId, input: event.input }),
       encoding: "utf8",
     });
+    if ((run.error as any)?.code === "ENOENT") {
+      return {
+        block: true,
+        reason: "Lyceum blocked this tool call: lyceum is not on PATH, so its hook cannot check it. Install it with npm i -g lyceum, brew install oritromax/tap/lyceum or go install github.com/oritromax/lyceum/cmd/lyceum@latest.",
+      };
+    }
     let answer: any;
     try {
       answer = JSON.parse(run.stdout);
     } catch {
-      return; // no answer, as when lyceum is not on PATH: the call goes ahead
+      return; // no answer: the call goes ahead
     }
     if (answer?.decision === "deny") {
       return { block: true, reason: answer.reason };

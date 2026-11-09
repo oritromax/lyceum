@@ -107,6 +107,7 @@ or stash: git stash`. The agent repeats it in plain words.
 Runs locally (and from the pre-commit hook) as a warning, and with `--ci` as a hard failure. The pre-commit
 hook never blocks a commit: it prints whatever `check` prints, findings or a refusal, and exits 0. It runs
 `lyceum check --pre-commit`, an internal flag; a hand-run `check` reports and writes no `bypass` event.
+With no `lyceum` on PATH the hook prints that it did not check the commit, naming the install commands, and exits 0. [DERIVED: plan e6a1a0 What and why; enforcement.md keeps pre-commit non-blocking]
 
 | Check | Fails when |
 |---|---|
@@ -150,7 +151,11 @@ All five v1 harnesses support a blocking pre-tool hook, and `init` installs one 
 `lyceum hook pre-tool --harness <name>`: a JSON command hook for Claude Code (`.claude/settings.json`), Codex
 (`.codex/hooks.json`) and Command Code (`.commandcode/settings.json`); a small JS/TS shim for OpenCode
 (`.opencode/plugins/`) and Pi (`.pi/extensions/`). Codex and Pi load project hooks only after the user trusts the
-project, so `init` says so. It blocks writes outside `lyceum/`, `docs/` and the plan's `files:` while
+project, so `init` says so.
+Each hook fails closed when `lyceum` is not on PATH, naming the install commands (`npm i -g lyceum`, `brew install oritromax/tap/lyceum`, `go install github.com/oritromax/lyceum/cmd/lyceum@latest`): the JSON command hooks check with POSIX `command -v`, print the message on stderr and exit 2, the status the harness blocks a call on; the OpenCode and Pi shims deny with it as the reason when spawning `lyceum` finds no binary. A bare call would exit 127, which harnesses treat as non-blocking. Hooks never name a path to the binary: npx's cache is pruned. [DERIVED: plan e6a1a0 What and why]
+Codex and Command Code are taken to block on exit 2 as Claude Code does. [AGENT-PROPOSED: not verified against a live Codex or Command Code]
+`init` warns, naming the install commands, when no `lyceum` will be on PATH after it runs: none is on PATH outside npx's cache, which npx adds only while it runs. [DERIVED: plan e6a1a0 What and why] [AGENT-PROPOSED: a global install found on PATH while running from npx counts, so it does not warn]
+It blocks writes outside `lyceum/`, `docs/` and the plan's `files:` while
 no code gate is cleared, and blocks any shell command that runs `lyceum approve` or `lyceum eject`.
 A here-document body fed to `cat` or `tee` and a `git commit`, `tag` or `merge` message are data; text it can't read, or that could run, is matched as a command.
 The entry point reads the harness's own pre-tool payload on stdin, decides allow or deny, and answers in that
@@ -233,4 +238,5 @@ The hook entry point must meet NF2.
 | AC178 | Given a clean-tree refusal over an untracked file, then the refusal names the file and a step says to ignore it if a tool writes it; given only tracked changes, then no such step; the file still refuses until it is ignored or removed |
 | AC181 | Given a pull request in a repo whose workflow uses `oritromax/lyceum/check-action@v1`, then the Action installs the released binary for the runner, verifies its checksum, and fails the job exactly when `lyceum check --ci` exits non-zero |
 | AC184 | Given a pull request's merge commit checked out with HEAD detached and `GITHUB_HEAD_REF` naming the pull request's branch, when `check --ci` runs, then it takes that branch as the current branch and checks the branch's unit, so a closed unit there passes with no `no-unit` finding; given no `GITHUB_HEAD_REF`, or local `check`, then a detached HEAD has no branch as before |
+| AC197 | Given the hooks `init` wrote and no `lyceum` on PATH, when a harness runs its hook, then the Claude Code, Codex and Command Code hooks exit 2 and the OpenCode and Pi shims deny, each with a message naming the install commands, and the pre-commit hook says it did not check the commit, names them and exits 0; given `init` run where no `lyceum` will be on PATH afterwards (only npx's cache, or none), then it warns naming them [DERIVED: plan e6a1a0 What and why] |
 | AC198 | Given two area files that both define the same AC ID (a `\| ACn \|` row or a `- **ACn**` bullet), when `check --ci` runs, then it fails naming the ID and every file defining it, even when every registry row lists it [DERIVED: every file named, from the plan's expected behaviour; locally it warns, as AC147]; and no `registry` hint says to add that ID to a row [DERIVED: the brief shows the hint creating the duplicate] |
