@@ -52,7 +52,12 @@ func runInput(dir string, input []byte, args ...string) ([]byte, error) {
 
 // runEnv is runInput with env added to git's environment.
 func runEnv(dir string, env []string, input []byte, args ...string) ([]byte, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
+	return runFor(Timeout, dir, env, input, args...)
+}
+
+// runFor is runEnv bounded by timeout instead of Timeout.
+func runFor(timeout time.Duration, dir string, env []string, input []byte, args ...string) ([]byte, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, "git", args...)
 	cmd.Dir = dir
@@ -66,7 +71,7 @@ func runEnv(dir string, env []string, input []byte, args ...string) ([]byte, err
 	cmd.Stdout, cmd.Stderr = &stdout, &stderr
 	err := cmd.Run()
 	if ctx.Err() != nil {
-		return nil, fmt.Errorf("git %s: timed out after %s", strings.Join(args, " "), Timeout)
+		return nil, fmt.Errorf("git %s: timed out after %s", strings.Join(args, " "), timeout)
 	}
 	var ee *exec.ExitError
 	if errors.As(err, &ee) {
@@ -249,10 +254,31 @@ func RemoteURL(dir, name string) (string, error) {
 	return v, err
 }
 
-// Upstream returns the upstream of local branch name, such as "origin/main",
-// or "" when it has none.
-func Upstream(dir, name string) (string, error) {
-	return run(dir, "for-each-ref", "--format=%(upstream:short)", "refs/heads/"+name)
+// PushTimeout bounds Push, which talks to a remote.
+const PushTimeout = 2 * time.Minute
+
+// PushArgs returns the git arguments that push local branch name, and only
+// it, never forced: to its upstream when it has one, else to origin with -u
+// so origin's branch of the same name becomes its upstream.
+func PushArgs(dir, name string) ([]string, error) {
+	v, err := run(dir, "for-each-ref", "--format=%(upstream:remotename) %(upstream:remoteref)", "refs/heads/"+name)
+	if err != nil {
+		return nil, err
+	}
+	remote, ref, _ := strings.Cut(v, " ")
+	if remote == "" || ref == "" {
+		return []string{"push", "-u", "origin", name}, nil
+	}
+	if strings.TrimPrefix(ref, "refs/heads/") != name {
+		return []string{"push", remote, name + ":" + ref}, nil
+	}
+	return []string{"push", remote, name}, nil
+}
+
+// Push runs git with args, from PushArgs, in dir under PushTimeout.
+func Push(dir string, args []string) error {
+	_, err := runFor(PushTimeout, dir, nil, nil, args...)
+	return err
 }
 
 // Branches returns the names of the local branches.

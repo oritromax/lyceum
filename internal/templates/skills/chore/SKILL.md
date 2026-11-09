@@ -50,8 +50,8 @@ commit or stash the changes. A chore starts trivial, at `build`.
 6. `verify`: with a clean tree, run `lyceum test` (the full suite). It clears `verify` when the suite passes.
    Quote the result: `Cleared verify for <unit>`, or the failure. A failing test: fix the cause, never the test;
    a new failure the chore didn't cause: offer `lyceum add bug "<title>"`.
-7. Once `verify` clears, run `lyceum close`. It sets the plan to closed and opens a PR, or prints the push and
-   merge commands.
+7. Once `verify` clears, run `lyceum close`. It sets the plan to closed, pushes the branch and opens a PR, or
+   prints the commands left to run.
 
 Never claim the chore is done from reasoning; quote the CLI.
 

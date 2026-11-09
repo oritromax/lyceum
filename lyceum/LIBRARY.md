@@ -6,3 +6,4 @@
 - bug: hooks fail open when lyceum is not on PATH after npx init (AC197)
 - bug: AC IDs are checked for uniqueness across area files (AC198)
 - bug: check action retries the release download and falls back to the REST API (AC199)
+- bug: close pushes the unit branch before it opens the pull request (AC200)

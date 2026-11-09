@@ -64,7 +64,7 @@ Gates: `spec` (you approve) → `build` → `verify` (recorded run) → `close`.
 | Verify | The agent runs `lyceum test` | `lyceum test` |
 | Close | The agent runs `lyceum close` | `lyceum close` |
 
-`close` folds the spec change into the area files and opens a PR, or prints the push and merge commands.
+`close` folds the spec change into the area files, pushes the branch and opens a PR, or prints the commands left to run.
 
 `lyceum approve` only runs in your own terminal. Inside an agent's shell it refuses, so the agent can tell you which approval is due and the exact command to type, but it can't approve anything on its own. See [Approvals](/concepts/approvals/).
 

@@ -20,8 +20,8 @@ Gates for a test: `write` → `run` (`lyceum test`) → `close`. No owner approv
    not do what the test expects, and offer to keep it as a bug. With their go-ahead, run `lyceum close`: it
    closes this unit and starts a bug on this branch at `diagnose`, with this test as its repro. Continue with
    `lyceum-bug`.
-5. Once `run` clears, run `lyceum close`. It sets the plan to closed and opens a PR, or prints the push and merge
-   commands. A test unit has no owner approval, so there is no plan to amend.
+5. Once `run` clears, run `lyceum close`. It sets the plan to closed, pushes the branch and opens a PR, or prints the
+   commands left to run. A test unit has no owner approval, so there is no plan to amend.
 
 No TESTING.md yet: `lyceum test` says so. Draft it from the detected frameworks without interviewing, then tell
 the owner to run `lyceum approve testing` in their own terminal.
