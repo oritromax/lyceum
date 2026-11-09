@@ -4,8 +4,18 @@ type: bug
 title: an AC ID defined twice in one area file is not flagged
 branch: fix/df39a2-an-ac-id-defined-twice-in-one-area-file
 status: implemented
-gate: cause
-approvals: []
+gate: close
+approvals:
+  - gate: cause
+    hashes:
+      internal/check/check.go: sha256:0fab670d4da9c57b2301282afac160879dc03dca08eccd10b95ba32221ee734f
+      lyceum/LIBRARY.md: sha256:ae42b58bdfa5b88c79784c48c267d9b97db05c6b0d57416515b065a21375e4d5
+      lyceum/SPEC.md: sha256:aff5a0a1f4c6607f9f44115c6fa541d5412cbf45ca92e642dd39711b5a5571ea
+      lyceum/plan/df39a2-an-ac-id-defined-twice-in-one-area-file.md: sha256:6479f37037e786d5bba854999b8c8fd44268d1f112e441e27186f0b83b339643
+      lyceum/spec/enforcement.md: sha256:1b42b1b5a52f89dd51de33aaacdcb7b3559c8aab01028b6cbd169ecb24b01aac
+    commit: aee0ae4
+    by: oritromax@gmail.com
+    at: 2026-11-09T09:51:31Z
 acs: [AC202]
 files:
   - internal/check/check.go
