@@ -89,6 +89,8 @@ acs: [AC185, AC186, AC187, AC188, AC189, AC190, AC191, AC192, AC193, AC194, AC19
 - [x] Step 5: `ac191_project_hashes_brief.txtar` passes on the existing CLI (no Go change).
 - [x] Step 6: `dist/lyceum init` refreshed the 8 installed copies, byte-identical to the templates; no other file
   changed; `doctor` reports no skill drift.
+- [x] Step 7: the greenfield interview line in `README.md`, `quickstart.md` and `existing-projects.md` names both
+  checkpoints in one clause.
 
 ## Log
 

@@ -41,7 +41,7 @@ Re-running `init` updates the skills and hooks to your installed version. It nev
 
 ## New project
 
-On a project with no code, the agent interviews you. It opens with one open question (what are you building, and for whom?), then numbered questions with options, at most two rounds. It writes spec areas under `lyceum/spec/`, each with acceptance criteria, and you approve the whole initial spec with:
+On a project with no code, the agent interviews you. It opens with one open question (what are you building, and for whom?), then numbered questions with options, at most two rounds; it keeps your brief word for word in `lyceum/spec/brief.md` and asks "Anything to add?" before the first numbered question and again before handing you the approve command. It writes spec areas under `lyceum/spec/`, each with acceptance criteria, and you approve the whole initial spec with:
 
 ```sh
 lyceum approve project
