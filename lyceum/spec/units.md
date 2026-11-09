@@ -182,9 +182,6 @@ to the chat. `init`, `feat`, `bug` and `doc` open and close their interviews wit
 The brief is frozen with what it led to: `brief.md` is a registered area, so `approve project` hashes it with the
 other area files, and a plan's `## Brief` is in the plan hash of `approve spec` and `approve cause`. A doc plan is
 hashed by no approval. After `project`, a unit's brief goes in its plan, never in `brief.md`.
-The brief is not an AC-bearing area: it defines no AC whatever it quotes, and it does not count as an area for the
-project gate, which is pending only once another area is registered. [DERIVED: `approve project` refuses with only
-`brief` registered, as it does with none, so AC38's "at least one area" cannot be met by the brief alone]
 
 **After a gate clears.** Any question about whether to proceed is a structured yes/no (yes starts the next
 step, no opens a discussion), never an open prose question. The next step is the one `status` prints.
@@ -260,4 +257,3 @@ are optional areas.
 | AC193 | Given the `lyceum-feat`, `lyceum-bug` and `lyceum-doc` skills, then each says to save the owner's brief verbatim to a `## Brief` section of the plan before any question, append each further message, that a first reply may be the first of several, and to ask once "Anything to add, or shall I proceed?" before numbered questions |
 | AC194 | Given the `lyceum-feat` and `lyceum-bug` skills, then each says to ask "Anything to add, or shall I consider the spec ready?" before giving its approve command (`lyceum approve spec`, `lyceum approve cause`), to append each addition to `## Brief`, update the spec and plan and ask again, and to give the command only after the owner says ready |
 | AC195 | Given the `lyceum-doc` skill, then it says to ask "Anything to add, or shall I consider the doc ready?" before running `lyceum test`, to append each addition to `## Brief` and update the doc and ask again, and that a doc has no approval, so "ready" lets the agent run `lyceum test` |
-| AC196 | Given `lyceum/spec/brief.md` quoting an AC table row or an AC bullet led by the bold ID, then it defines no AC (no registry, unclaimed or coverage entry, and no file for an AC's lookup); and given a greenfield registry listing only `brief`, then `project` is not pending and `approve project` refuses, until another area is registered [DERIVED: the refusal and the lookups ignoring it follow from "ACs aren't read from brief.md" and "brief doesn't count as an area for the project gate"] |

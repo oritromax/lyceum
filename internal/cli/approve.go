@@ -617,12 +617,11 @@ func testingPending(root string) (bool, error) {
 
 // projectPending reports whether the project gate waits for the owner:
 // the repo is greenfield (brownfield finds no code), its area registry lists
-// at least one area other than the brief, and no counting project approval
-// exists. Re-approving is allowed, but once approved the gate is never
-// pending again.
+// at least one area, and no counting project approval exists. Re-approving
+// is allowed, but once approved the gate is never pending again.
 func projectPending(root string) (bool, error) {
 	areas, err := approval.RegisteredAreas(root)
-	if err != nil || !slices.ContainsFunc(areas, func(f string) bool { return !acmap.IsBrief(f) }) {
+	if err != nil || len(areas) == 0 {
 		return false, err
 	}
 	if approved, err := projectApproved(root); err != nil || approved {

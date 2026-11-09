@@ -446,7 +446,7 @@ func Registry(ctx Context) ([]Finding, error) {
 			return nil, err
 		}
 		var missing []string
-		for _, def := range acmap.Definitions(f, data) {
+		for _, def := range acmap.Definitions(data) {
 			if !inRanges(rows[i].ACs, strings.TrimPrefix(def.ID, "AC")) {
 				missing = append(missing, def.ID)
 			}

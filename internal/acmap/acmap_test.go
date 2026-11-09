@@ -204,7 +204,7 @@ func TestDefinitions_AC167(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			if got := Definitions("orders.md", []byte(c.text)); !slices.Equal(got, c.want) {
+			if got := Definitions([]byte(c.text)); !slices.Equal(got, c.want) {
 				t.Errorf("Definitions(%q) = %v; want %v", c.text, got, c.want)
 			}
 		})

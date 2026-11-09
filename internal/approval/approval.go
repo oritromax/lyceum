@@ -60,10 +60,6 @@ func FilesFor(root string, typ gate.Type, g gate.Gate, planPath string, p *unit.
 			return nil, out.Refuse(what, "no area is registered in the area registry of "+SpecPath+", so there is nothing to approve",
 				`start your agent's lyceum-init skill for the project interview, which writes and registers the areas, then run "lyceum approve project" yourself in a terminal`)
 		}
-		if !slices.ContainsFunc(files, func(f string) bool { return !acmap.IsBrief(f) }) {
-			return nil, out.Refuse(what, "no area other than brief is registered in the area registry of "+SpecPath+", so there is nothing to approve",
-				`continue your agent's lyceum-init skill for the project interview, which writes and registers the areas, then run "lyceum approve project" yourself in a terminal`)
-		}
 		for _, f := range files {
 			if _, err := os.Stat(filepath.Join(root, filepath.FromSlash(f))); errors.Is(err, fs.ErrNotExist) {
 				return nil, out.Refuse(what, fmt.Sprintf("the area registry of %s lists %s, but it does not exist", SpecPath, f),
@@ -283,7 +279,7 @@ func ACFile(root, id string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		for _, def := range acmap.Definitions(file, data) {
+		for _, def := range acmap.Definitions(data) {
 			if def.ID == id {
 				return path.Join(specDir, filepath.Base(file)), nil
 			}
