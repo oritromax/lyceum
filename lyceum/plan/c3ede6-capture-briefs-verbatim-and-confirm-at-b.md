@@ -91,6 +91,9 @@ acs: [AC185, AC186, AC187, AC188, AC189, AC190, AC191, AC192, AC193, AC194, AC19
   changed; `doctor` reports no skill drift.
 - [x] Step 7: the greenfield interview line in `README.md`, `quickstart.md` and `existing-projects.md` names both
   checkpoints in one clause.
+- [ ] Step 8: blocked. `golangci-lint run`: 0 issues. `go test ./...`: only `TestOwnMainPassesCheckCI_AC183` fails,
+  on check's `unclaimed-acs` warning for AC185–AC195 (no closed plan or `lyceum/LIBRARY.md` entry names them yet).
+  The fix needs `lyceum/LIBRARY.md`, which is outside `files:`; `lyceum test` not run.
 
 ## Log
 
