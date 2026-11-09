@@ -3,8 +3,8 @@ id: 1ed791-merging-main-into-a-bug-branch-after-app
 type: bug
 title: merging main into a bug branch after approve cause breaks its approval
 branch: fix/1ed791-merging-main-into-a-bug-branch-after-app
-status: in-progress
-gate: diagnose
+status: implemented
+gate: cause
 approvals: []
 acs: [AC201]
 files:
