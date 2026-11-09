@@ -7,6 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -14,6 +17,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/rogpeppe/go-internal/testscript"
@@ -188,8 +192,124 @@ func TestScripts(t *testing.T) {
 	testscript.Run(t, testscript.Params{
 		Dir:   filepath.Join("testdata", "script"),
 		Setup: setupScript,
-		Cmds:  map[string]func(*testscript.TestScript, bool, []string){"jsonobject": jsonObject, "jsonl": jsonLines, "sha256file": sha256File, "payload": payload, "hookrun": hookRun, "ttyrun": ttyRun, "linesub": lineSub, "shorttemp": shortTemp},
+		Cmds:  map[string]func(*testscript.TestScript, bool, []string){"jsonobject": jsonObject, "jsonl": jsonLines, "sha256file": sha256File, "payload": payload, "hookrun": hookRun, "ttyrun": ttyRun, "linesub": lineSub, "shorttemp": shortTemp, "fakegithub": fakeGitHub},
 	})
+}
+
+// fakeGitHub implements the script command `fakegithub <release-dir>`: it serves
+// the release tree <release-dir>/<tag>/<file> over HTTP until the script ends and
+// sets GH to its URL. /down/<tag>/<file> always answers 504, as github.com's
+// release download did in an outage; /flaky/<tag>/<file> answers 504 twice per
+// file, then the file; /api/repos/oritromax/lyceum/releases/tags/<tag> lists the
+// tag's assets as the REST API does, and .../releases/assets/<id> serves one with
+// Accept: application/octet-stream; /apidown/... always answers 504. Each request
+// is appended to $WORK/gh.log as "<path> auth=<Authorization header>".
+func fakeGitHub(ts *testscript.TestScript, neg bool, args []string) {
+	if neg || len(args) != 1 {
+		ts.Fatalf("usage: fakegithub <release-dir>")
+	}
+	rel := ts.MkAbs(args[0])
+	logPath := filepath.Join(ts.Getenv("WORK"), "gh.log")
+	const api = "/api/repos/oritromax/lyceum/releases/"
+	var mu sync.Mutex
+	hits := map[string]int{}
+	// index numbers every <tag>/<file> from 100, in directory order: id to path,
+	// and each tag's files by id.
+	index := func() (map[int]string, map[string]map[int]string) {
+		paths, byTag := map[int]string{}, map[string]map[int]string{}
+		id := 100
+		tags, _ := os.ReadDir(rel)
+		for _, t := range tags {
+			files, _ := os.ReadDir(filepath.Join(rel, t.Name()))
+			byTag[t.Name()] = map[int]string{}
+			for _, f := range files {
+				paths[id] = filepath.Join(rel, t.Name(), f.Name())
+				byTag[t.Name()][id] = f.Name()
+				id++
+			}
+		}
+		return paths, byTag
+	}
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mu.Lock()
+		hits[r.URL.Path]++
+		n := hits[r.URL.Path]
+		f, err := os.OpenFile(logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+		if err == nil {
+			_, _ = fmt.Fprintf(f, "%s auth=%s\n", r.URL.Path, r.Header.Get("Authorization"))
+			_ = f.Close()
+		}
+		mu.Unlock()
+		p := r.URL.Path
+		switch {
+		case strings.HasPrefix(p, "/down/"), strings.HasPrefix(p, "/apidown/"):
+			http.Error(w, "gateway timeout", http.StatusGatewayTimeout)
+		case strings.HasPrefix(p, "/flaky/"):
+			if n <= 2 {
+				http.Error(w, "gateway timeout", http.StatusGatewayTimeout)
+				return
+			}
+			http.ServeFile(w, r, filepath.Join(rel, filepath.FromSlash(strings.TrimPrefix(p, "/flaky/"))))
+		case strings.HasPrefix(p, api+"tags/"):
+			tag := strings.TrimPrefix(p, api+"tags/")
+			_, byTag := index()
+			entries := byTag[tag]
+			if len(entries) == 0 {
+				http.NotFound(w, r)
+				return
+			}
+			type user struct {
+				Login string `json:"login"`
+				URL   string `json:"url"`
+			}
+			type asset struct {
+				URL                string `json:"url"`
+				ID                 int    `json:"id"`
+				Name               string `json:"name"`
+				Uploader           user   `json:"uploader"`
+				State              string `json:"state"`
+				BrowserDownloadURL string `json:"browser_download_url"`
+			}
+			out := struct {
+				URL     string  `json:"url"`
+				TagName string  `json:"tag_name"`
+				Assets  []asset `json:"assets"`
+			}{URL: "http://" + r.Host + api + "1", TagName: tag}
+			ids := slices.Sorted(maps.Keys(entries))
+			for _, id := range ids {
+				out.Assets = append(out.Assets, asset{
+					URL:      "http://" + r.Host + api + "assets/" + strconv.Itoa(id),
+					ID:       id,
+					Name:     entries[id],
+					Uploader: user{Login: "releaser", URL: "http://" + r.Host + "/api/users/releaser"},
+					State:    "uploaded", BrowserDownloadURL: "http://" + r.Host + "/down/" + tag + "/" + entries[id],
+				})
+			}
+			w.Header().Set("Content-Type", "application/json")
+			b, _ := json.MarshalIndent(out, "", "  ")
+			_, _ = w.Write(b)
+		case strings.HasPrefix(p, api+"assets/"):
+			if r.Header.Get("Accept") != "application/octet-stream" {
+				http.Error(w, "want Accept: application/octet-stream", http.StatusUnsupportedMediaType)
+				return
+			}
+			id, err := strconv.Atoi(strings.TrimPrefix(p, api+"assets/"))
+			if err != nil {
+				http.NotFound(w, r)
+				return
+			}
+			paths, _ := index()
+			if path, ok := paths[id]; ok {
+				http.ServeFile(w, r, path)
+				return
+			}
+			http.NotFound(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	ts.Defer(srv.Close)
+	ts.Setenv("GH", srv.URL)
 }
 
 // lineSub implements the script command `linesub <in> <out> <line> <text>`: it

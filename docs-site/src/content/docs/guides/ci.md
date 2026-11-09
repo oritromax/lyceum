@@ -25,7 +25,7 @@ If you accept CI during `init`, it writes `.github/workflows/lyceum.yml`, a pull
 The `oritromax/lyceum/check-action` step:
 
 1. Picks a Lyceum release (see [Which release runs](#which-release-runs)).
-2. Downloads that release's binary for the runner and verifies its SHA-256 checksum.
+2. Downloads that release's binary for the runner and verifies its SHA-256 checksum. A failed download is retried for about a minute. If the release download URL still fails, the step fetches the same file through the GitHub REST API, sending the optional `token` input (by default the job's `github.token`). The job fails only when both fail, and the error names both URLs.
 3. Runs `lyceum check --ci` in the workspace. The job fails when the check exits non-zero.
 
 It runs on Linux and macOS runners, X64 and ARM64. Any other runner fails with a message naming the unsupported OS or architecture.
