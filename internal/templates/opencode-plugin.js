@@ -11,10 +11,16 @@ export default {
         input: JSON.stringify({ ...payload, cwd: ctx.location.directory }),
         encoding: "utf8",
       });
+      if (run.error?.code === "ENOENT") {
+        return {
+          decision: "deny",
+          reason: "Lyceum blocked this tool call: lyceum is not on PATH, so its hook cannot check it. Install it with npm i -g lyceum, brew install oritromax/tap/lyceum or go install github.com/oritromax/lyceum/cmd/lyceum@latest.",
+        };
+      }
       try {
         return JSON.parse(run.stdout);
       } catch {
-        return undefined; // no answer, as when lyceum is not on PATH: the call goes ahead
+        return undefined; // no answer: the call goes ahead
       }
     };
     await ctx.tool.hook("execute.before", (event) => {

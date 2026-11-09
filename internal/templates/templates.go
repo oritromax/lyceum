@@ -56,6 +56,12 @@ const (
 //go:embed pre-commit
 var PreCommit string
 
+// InstallHint names the install commands. Every hook init writes, and init
+// itself, print it when lyceum is not on PATH; the pre-commit hook and the
+// shims carry it as text.
+const InstallHint = "Install it with npm i -g lyceum, brew install oritromax/tap/lyceum or " +
+	"go install github.com/oritromax/lyceum/cmd/lyceum@latest."
+
 // Workflow is the CI workflow, .github/workflows/lyceum.yml.
 //
 //go:embed workflow.yml

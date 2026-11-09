@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "lyceum hook pre-tool --harness codex"
+            "command": "command -v lyceum >/dev/null 2>&1 || { echo 'Lyceum blocked this tool call: lyceum is not on PATH, so its hook cannot check it. Install it with npm i -g lyceum, brew install oritromax/tap/lyceum or go install github.com/oritromax/lyceum/cmd/lyceum@latest.' >&2; exit 2; }; lyceum hook pre-tool --harness codex"
           }
         ]
       }

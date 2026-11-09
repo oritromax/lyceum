@@ -3,7 +3,7 @@ title: Install
 description: Install Lyceum with npm, Homebrew, Go, or a release binary.
 ---
 
-Run it once without installing:
+Run `init` once without installing. The hooks it wires call `lyceum` on every tool call and commit, so also install it globally (any command below): without it the harness hooks block every tool call and the pre-commit check is skipped.
 
 ```sh
 npx lyceum init
