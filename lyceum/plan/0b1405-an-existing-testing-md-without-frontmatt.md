@@ -4,8 +4,26 @@ type: bug
 title: an existing TESTING.md without frontmatter leaves brownfield init at a dead end
 branch: fix/0b1405-an-existing-testing-md-without-frontmatt
 status: implemented
-gate: cause
-approvals: []
+gate: close
+approvals:
+  - gate: cause
+    hashes:
+      .agents/skills/lyceum-init/SKILL.md: sha256:b882d08dfed154e3cd23daca5bbf274ba75de0a5298b8c590b500281ded14fac
+      .claude/skills/lyceum-init/SKILL.md: sha256:b882d08dfed154e3cd23daca5bbf274ba75de0a5298b8c590b500281ded14fac
+      README.md: sha256:0d4386eb052d2da32025e6a63215526275f81b5c99d97a2f8665d8160b44fe66
+      docs-site/src/content/docs/guides/existing-projects.md: sha256:57acc6ff6e13d58fe0608df28d6a6e896660cb831bd28f715521173c8992241a
+      internal/cli/approve.go: sha256:08049d7517d688086b8bdce05dafda9737f6048391092004e6c0420c56526839
+      internal/cli/init.go: sha256:350746467713d191f44b8d36de0d90fd3bf72d3d99b658daff447e02381e33ff
+      internal/cli/status.go: sha256:da678a55883d72d42ce19b3bb48b7fae88104ddadad88944a3a5065ee37e41e7
+      internal/templates/skills/init/SKILL.md: sha256:b882d08dfed154e3cd23daca5bbf274ba75de0a5298b8c590b500281ded14fac
+      internal/testspec/testspec.go: sha256:cc5f1c0a461e73fde06ed88be532762a1fa311b9a1e7bb8d16f0ef670ad8df61
+      lyceum/LIBRARY.md: sha256:d8858322d1006b93a1cacf5975cf440b7af29b27aca094f2eb13001c86ed34b9
+      lyceum/SPEC.md: sha256:e683e54d4c1f262612c6507784aadad885f60a2f1d6b08ee9e330b9cc6fe8f8d
+      lyceum/plan/0b1405-an-existing-testing-md-without-frontmatt.md: sha256:6f3eee8663a775473d28f6f260a86b79e3f94eba6aae8bb1441a4dfaedfbe271
+      lyceum/spec/distribution.md: sha256:557893345742d7705e6bbbe4e87d9db858bf7898ab86b372839591624210a7ff
+    commit: 6ae2945
+    by: oritromax@gmail.com
+    at: 2026-11-09T10:14:28Z
 acs: [AC203]
 files:
   - internal/testspec/testspec.go
