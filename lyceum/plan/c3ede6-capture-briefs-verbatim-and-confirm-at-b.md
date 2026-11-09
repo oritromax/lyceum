@@ -86,6 +86,7 @@ acs: [AC185, AC186, AC187, AC188, AC189, AC190, AC191, AC192, AC193, AC194, AC19
 - [x] Step 2: `feat` (112 lines) and `bug` (111 lines) skill checkpoints into `## Brief`.
 - [x] Step 3: `doc` skill checkpoints; no approval, so "ready" runs `lyceum test` (35 lines).
 - [x] Step 4: `TestSkillCheckpoints_AC185`…`AC195` (AC191 excepted) in `templates_test.go`; all pass.
+- [x] Step 5: `ac191_project_hashes_brief.txtar` passes on the existing CLI (no Go change).
 
 ## Log
 
