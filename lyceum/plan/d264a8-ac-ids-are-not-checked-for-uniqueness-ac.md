@@ -4,8 +4,18 @@ type: bug
 title: AC IDs are not checked for uniqueness across area files
 branch: fix/d264a8-ac-ids-are-not-checked-for-uniqueness-ac
 status: implemented
-gate: cause
-approvals: []
+gate: close
+approvals:
+  - gate: cause
+    hashes:
+      internal/check/check.go: sha256:2f15740cce11b4b6f1428244f3cfe121acc21f60f457fe95a26f69d9d1eec651
+      lyceum/LIBRARY.md: sha256:85d2a0930842a68efd64a0b3fc184a1de045ea15a99703152d0ba8daa9c519b5
+      lyceum/SPEC.md: sha256:e80cabc6fb0f8be5c6a6f0cbc3225ae45ad73c95e7bd25e689e701fe493cbf65
+      lyceum/plan/d264a8-ac-ids-are-not-checked-for-uniqueness-ac.md: sha256:983336d99bed0d71eee849062bdd9e328676983b3dd9663c815494f04d0b07b4
+      lyceum/spec/enforcement.md: sha256:2437f83bc5915bac42b0f8b74908c97cc6e03ec7c1dc726e8da9efc1ac73f14a
+    commit: 3a9bf64
+    by: oritromax@gmail.com
+    at: 2026-11-09T07:34:57Z
 files: [internal/check/check.go]
 acs: [AC198]
 ---
