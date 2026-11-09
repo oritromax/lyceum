@@ -3,8 +3,8 @@ id: 6426ac-close-opens-the-pull-request-without-its
 type: bug
 title: close opens the pull request without its close commit
 branch: fix/6426ac-close-opens-the-pull-request-without-its
-status: planned
-gate: repro
+status: in-progress
+gate: diagnose
 approvals: []
 ---
 
