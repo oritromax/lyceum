@@ -1,0 +1,116 @@
+# AC200: given close with an origin remote, then it pushes the unit branch after the close commit and before it opens the pull request, so the pull request has the close commit
+# origin is a local bare repository at a path naming github.com; gh is a fake that records the subject of
+# origin's commit on the branch it is asked to open a pull request for.
+cd $REPO
+exec lyceum init
+cp $WORK/TESTING.md TESTING.md
+cp $WORK/t.sh t.sh
+cp $WORK/a_test.sh a_test.sh
+exec git add -A
+exec git commit -q -m 'setup'
+ttyin -stdin $WORK/testing.txt
+exec sh -c 'lyceum approve testing >/dev/tty; echo "exit=$?"'
+stdout '^exit=0$'
+env ORIGIN=$WORK/github.com/acme/app.git
+exec git init -q --bare $ORIGIN
+exec git remote add origin $ORIGIN
+exec git push -q origin main
+mkdir $WORK/bin
+cp $WORK/fake-gh $WORK/bin/gh
+chmod 0755 $WORK/bin/gh
+env PATH=$WORK/bin${:}$PATH
+
+# The branch was pushed before close: close pushes the close commit to its upstream, then runs gh.
+exec lyceum add doc 'Guide'
+mkdir docs
+cp $WORK/guide.md docs/guide.md
+exec git add -A
+exec git commit -q -m 'guide'
+exec git push -q -u origin HEAD
+exec lyceum test
+stdout '^Cleared verify for '
+exec lyceum close
+stdout '^Closed [0-9a-f]{6}-guide$'
+stdout '^Opened a pull request from docs/[0-9a-f]{6}-guide into main with gh$'
+grep '^lyceum: close [0-9a-f]{6}-guide$' $WORK/gh-saw.txt
+exec sh -c 'test "$(git rev-parse HEAD)" = "$(git --git-dir="$ORIGIN" rev-parse "refs/heads/$(git branch --show-current)")" && echo same'
+stdout '^same$'
+! grep '"type":"merge"' lyceum/events.jsonl
+
+# The branch has no upstream: close pushes it with -u, then runs gh.
+rm $WORK/gh-saw.txt
+exec git switch -q main
+exec lyceum add doc 'Faq'
+mkdir docs
+cp $WORK/guide.md docs/faq.md
+exec git add -A
+exec git commit -q -m 'faq'
+exec lyceum test
+exec lyceum close
+stdout '^Closed [0-9a-f]{6}-faq$'
+stdout '^Opened a pull request from docs/[0-9a-f]{6}-faq into main with gh$'
+grep '^lyceum: close [0-9a-f]{6}-faq$' $WORK/gh-saw.txt
+exec git rev-parse --abbrev-ref '@{upstream}'
+stdout '^origin/docs/[0-9a-f]{6}-faq$'
+
+# No gh: close still pushes, then prints the pull request step.
+rm $WORK/gh-saw.txt
+rm $WORK/bin/gh
+exec git switch -q main
+exec lyceum add doc 'Tips'
+mkdir docs
+cp $WORK/guide.md docs/tips.md
+exec git add -A
+exec git commit -q -m 'tips'
+exec lyceum test
+exec lyceum close
+stdout '^Closed [0-9a-f]{6}-tips$'
+stdout 'open a pull request from docs/[0-9a-f]{6}-tips into main'
+exec sh -c 'git --git-dir="$ORIGIN" log -1 --format=%s "refs/heads/$(git branch --show-current)"'
+stdout '^lyceum: close [0-9a-f]{6}-tips$'
+
+# The push fails: the unit stays closed, no pull request is opened, and the push and create commands are printed.
+cp $WORK/fake-gh $WORK/bin/gh
+chmod 0755 $WORK/bin/gh
+exec git switch -q main
+exec git remote set-url origin $WORK/github.com/acme/gone.git
+exec lyceum add doc 'Notes'
+mkdir docs
+cp $WORK/guide.md docs/notes.md
+exec git add -A
+exec git commit -q -m 'notes'
+exec lyceum test
+exec lyceum close
+stdout '^Closed [0-9a-f]{6}-notes$'
+stdout '^  git push -u origin docs/[0-9a-f]{6}-notes$'
+stdout '^  gh pr create --base main --head docs/[0-9a-f]{6}-notes '
+! stdout '^Opened a pull request'
+! exists $WORK/gh-saw.txt
+exec git log -1 --format=%s
+stdout '^lyceum: close [0-9a-f]{6}-notes$'
+
+-- testing.txt --
+testing
+-- t.sh --
+sh ./a_test.sh
+-- a_test.sh --
+true
+-- guide.md --
+# Guide
+-- fake-gh --
+#!/bin/sh
+head=
+while [ $# -gt 0 ]; do
+  if [ "$1" = --head ]; then head=$2; fi
+  shift
+done
+git --git-dir="$ORIGIN" log -1 --format=%s "refs/heads/$head" > "$WORK/gh-saw.txt" 2>&1
+echo https://github.com/acme/app/pull/1
+-- TESTING.md --
+---
+lyceum: 1
+suite: sh ./t.sh
+test_files: ["**/*_test.sh"]
+---
+
+# TESTING.md
