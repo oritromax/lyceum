@@ -3,9 +3,17 @@ id: c3ede6-capture-briefs-verbatim-and-confirm-at-b
 type: feat
 title: capture briefs verbatim and confirm at both ends
 branch: feat/c3ede6-capture-briefs-verbatim-and-confirm-at-b
-status: planned
-gate: spec
-approvals: []
+status: in-progress
+gate: build
+approvals:
+  - gate: spec
+    hashes:
+      lyceum/SPEC.md: sha256:1fb14b52d122f4b30123a1594291c728deef67725a5c349cae041e93f1e1afdc
+      lyceum/plan/c3ede6-capture-briefs-verbatim-and-confirm-at-b.md: sha256:bef3cdb491255ab7491e7f19945c5bb1358bc9e4a5fd33abb98f44f0b246de9b
+      lyceum/spec/units.md: sha256:1938d20627b65ce84fd779e37379ffcdb3baf00b83928c05e10953f50ddd6913
+    commit: 372108f
+    by: oritromax@gmail.com
+    at: 2026-11-09T05:28:55Z
 areas: [units]
 files:
   - internal/templates/skills/init/SKILL.md
