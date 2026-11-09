@@ -3,7 +3,7 @@ id: a516e0-starlight-docs-site-in-docs-site-for-clo
 type: chore
 title: Starlight docs site in docs-site for Cloudflare Pages
 branch: chore/a516e0-starlight-docs-site-in-docs-site-for-clo
-status: implemented
+status: closed
 gate: close
 files: [docs-site/package.json, docs-site/package-lock.json, docs-site/astro.config.mjs, docs-site/tsconfig.json, docs-site/.gitignore, docs-site/README.md, docs-site/public/favicon.svg, docs-site/public/_headers, docs-site/src/content.config.ts, docs-site/src/content/docs/index.mdx, docs-site/src/content/docs/start/what-is-lyceum.md, docs-site/src/content/docs/start/install.md, docs-site/src/content/docs/start/quickstart.md, docs-site/src/content/docs/concepts/units-and-gates.md, docs-site/src/content/docs/concepts/approvals.md, docs-site/src/content/docs/concepts/acceptance-criteria.md, docs-site/src/content/docs/guides/agents.md, docs-site/src/content/docs/guides/ci.md, docs-site/src/content/docs/guides/existing-projects.md, docs-site/src/content/docs/reference/commands.md, docs-site/src/content/docs/reference/config.md]
 approvals:

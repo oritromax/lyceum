@@ -4,3 +4,4 @@
 - feat: capture briefs verbatim and confirm at both ends (AC185, AC186, AC187, AC188, AC189, AC190, AC191, AC192, AC193, AC194, AC195)
 - bug: brief.md defines no ACs and is not a project area (AC196)
 - bug: hooks fail open when lyceum is not on PATH after npx init (AC197)
+- bug: AC IDs are checked for uniqueness across area files (AC198)

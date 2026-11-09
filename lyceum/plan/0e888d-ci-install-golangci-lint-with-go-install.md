@@ -3,7 +3,7 @@ id: 0e888d-ci-install-golangci-lint-with-go-install
 type: chore
 title: 'CI: install golangci-lint with go install instead of the release CDN'
 branch: chore/0e888d-ci-install-golangci-lint-with-go-install
-status: implemented
+status: closed
 gate: close
 files: [.github/workflows/ci.yml]
 approvals:
