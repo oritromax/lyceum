@@ -78,8 +78,8 @@ AC114 and AC115 stay in the spec, marked deferred, and release coverage does not
 
 An event line is one JSON object with at least `ts`, `type`, `unit`, `actor`, `commit`, plus type-specific fields such as an approval's hashes.
 The `add` event carries `unit_type` (the unit's type; `type` is the event type), `branch`, `gate` and `status`, so every CLI-owned plan field can be rebuilt from the log.
-A `gate-reopen` event (`unit`, `gate`, `status`, `reason`, `commit`) records a gate moving back, e.g. a bug sent from `cause`
-to `fix` by a code commit after `verify`; the CLI writes it the first time it notices, then moves the plan's `gate`, and `status` back to `in-progress`. `lyceum plan` upgrading a trivial chore writes one too: `gate: plan`, `status: planned`, `reason: chore upgraded to planned`.
+A `gate-reopen` event (`unit`, `gate`, `status`, `reason`, `commit`) records a gate moving back. A bug goes from `cause`
+to `fix` on a commit after `verify` that changes a non-test file outside `lyceum/`. An open bug at `close` goes back to `cause` when a file its `approve cause` hashed changes, e.g. a merge of the base branch (AC201), and to `fix` when a commit after `verify` changes a non-test file outside `lyceum/` that is in the branch's own diff from its merge base; code that reached the branch only by merging the base branch does not count (AC204). The CLI writes the event the first time it notices, then moves the plan's `gate`, and on a move to `fix` its `status` back to `in-progress`. `lyceum plan` upgrading a trivial chore writes one too: `gate: plan`, `status: planned`, `reason: chore upgraded to planned`.
 
 ## Acceptance criteria
 
