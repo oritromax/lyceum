@@ -4,8 +4,21 @@ type: bug
 title: check action gives up on a 504 from the release download
 branch: fix/9bcd7a-check-action-gives-up-on-a-504-from-the
 status: implemented
-gate: cause
-approvals: []
+gate: close
+approvals:
+  - gate: cause
+    hashes:
+      check-action/action.yml: sha256:4544be541a332c856e3f5f8503ede3e4e323c727818c04cbebc663d597373293
+      check-action/run.sh: sha256:969ddd53ac1e8f14afaecca25f2b0e9fe599afb8418e68a00aba398f1b22d049
+      docs-site/src/content/docs/guides/ci.md: sha256:21b3fb4cb31b1a9138ee6e7782c36c7be2a25a5e617f82b4bd9f887af9364a6f
+      docs/ci.md: sha256:9dc1995f55ccf5ac31b6d97b6883fdf7f470f0e758ea5cda3ac7f63f9d92de53
+      lyceum/LIBRARY.md: sha256:fd36bdb1199473ada8459475bcb2353dbe886ff2c65bcaf2a8e03de61e03b1ae
+      lyceum/SPEC.md: sha256:74b54215fb3666634f0660832332bb7852e252a456a8a57c658b7d25f249e8e1
+      lyceum/plan/9bcd7a-check-action-gives-up-on-a-504-from-the.md: sha256:54b3b7fbfa8afc8202e726043e41203be92f9290efeb1969ce2b4c4a94d7e6cd
+      lyceum/spec/enforcement.md: sha256:23ffd763f5d67bb55132ca8d4fce38c122a39fb82d93013752f54695d7e7f4cb
+    commit: 5c6fa17
+    by: oritromax@gmail.com
+    at: 2026-11-09T08:19:59Z
 files: [check-action/run.sh, check-action/action.yml, cmd/lyceum/script_test.go, cmd/lyceum/testdata/script/ac199_check_action_download_fallback.txtar, docs/ci.md, docs-site/src/content/docs/guides/ci.md]
 acs: [AC199]
 ---
