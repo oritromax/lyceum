@@ -3,8 +3,8 @@ id: e6a1a0-hooks-fail-open-when-lyceum-is-not-on-pa
 type: bug
 title: hooks fail open when lyceum is not on PATH after npx init
 branch: fix/e6a1a0-hooks-fail-open-when-lyceum-is-not-on-pa
-status: in-progress
-gate: diagnose
+status: implemented
+gate: cause
 approvals: []
 files: [internal/cli/initharness.go, internal/cli/init.go, internal/templates/templates.go, internal/templates/pre-commit, internal/templates/opencode-plugin.js, internal/templates/pi-extension.ts, internal/templates/templates_test.go, cmd/lyceum/testdata/script/ac052_init_hooks_ci.txtar, cmd/lyceum/testdata/script/ac053_init_wiring.txtar, cmd/lyceum/testdata/script/ac092_init_rerun.txtar, cmd/lyceum/testdata/script/ac197_init_and_precommit_without_lyceum.txtar, README.md, docs-site/src/content/docs/start/install.md, docs-site/src/content/docs/index.mdx, .claude/settings.json, .codex/hooks.json]
 acs: [AC197]
