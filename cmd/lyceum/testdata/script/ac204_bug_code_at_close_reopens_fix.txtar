@@ -1,0 +1,105 @@
+# AC204: given a bug at close (cause approved, not closed) and a later commit in the branch's own diff that
+# changes a file that is neither a test nor under lyceum/, such as a new code file or an edit to code the cause
+# approval did not hash, when status or a local check runs, then the bug goes back to fix with a gate-reopen
+# event naming the files, and check --ci before that fails reopen; code that reached the branch only by
+# merging the base branch leaves the bug at close.
+# ttyrun runs the command on a pty, so stdin and stdout are both a terminal.
+cd $REPO
+exec lyceum init
+mkdir src
+cp $WORK/TESTING.md TESTING.md
+cp $WORK/t.sh t.sh
+cp $WORK/login-broken.sh src/login.sh
+exec git add -A
+exec git commit -q -m 'setup'
+ttyrun $WORK/testing.txt 'lyceum approve testing'
+stdout '^exit=0$'
+exec lyceum add bug 'Login plus'
+cp $WORK/login_test.sh src/login_test.sh
+exec git add -A
+exec git commit -q -m 'repro test'
+exec lyceum test --repro TestLoginPlus
+stdout '^Cleared repro for 6ae678-login-plus$'
+cp $WORK/login-fixed.sh src/login.sh
+exec sh -c 'printf "\nThe bug notes.\n" >> lyceum/SPEC.md'
+exec git add -A
+exec git commit -q -m 'fix'
+exec lyceum test
+stdout '^Cleared verify for 6ae678-login-plus$'
+ttyrun $WORK/cause.txt 'lyceum approve cause'
+stdout '^exit=0$'
+grep '^gate: close$' lyceum/plan/6ae678-login-plus.md
+
+# A new code file committed on the branch after approve cause.
+cp $WORK/other.sh src/other.sh
+exec git add -A
+exec git commit -q -m 'other'
+! exec lyceum check --ci
+stderr '^  fail: reopen: .*src/other.sh'
+exec lyceum status
+stdout '^Back to fix for 6ae678-login-plus: .*src/other.sh'
+grep '^gate: fix$' lyceum/plan/6ae678-login-plus.md
+grep -count=1 '"type":"gate-reopen"' lyceum/events.jsonl
+grep '"type":"gate-reopen","unit":"6ae678-login-plus",.*"gate":"fix","reason":"[^"]*src/other.sh' lyceum/events.jsonl
+exec git status --porcelain
+! stdout .
+
+# verify clears again and the owner approves cause again.
+exec lyceum test
+stdout '^Cleared verify for 6ae678-login-plus$'
+ttyrun $WORK/cause.txt 'lyceum approve cause'
+stdout '^exit=0$'
+grep '^gate: close$' lyceum/plan/6ae678-login-plus.md
+
+# An edit to a code file the cause approval did not hash.
+exec sh -c 'printf "# suite\n" >> t.sh'
+exec git commit -q -am 'edit suite'
+exec lyceum check
+stdout '^Back to fix for 6ae678-login-plus: .*t.sh'
+grep '^gate: fix$' lyceum/plan/6ae678-login-plus.md
+grep -count=2 '"type":"gate-reopen"' lyceum/events.jsonl
+exec lyceum test
+stdout '^Cleared verify for 6ae678-login-plus$'
+ttyrun $WORK/cause.txt 'lyceum approve cause'
+stdout '^exit=0$'
+grep '^gate: close$' lyceum/plan/6ae678-login-plus.md
+
+# A code file that arrives only by merging main leaves the bug at close.
+exec git checkout -q main
+cp $WORK/other.sh src/main.sh
+exec git add -A
+exec git commit -q -m 'main code'
+exec git checkout -q fix/6ae678-login-plus
+exec git merge -q --no-edit main
+exec lyceum status
+! stdout '^Back to'
+grep '^gate: close$' lyceum/plan/6ae678-login-plus.md
+grep -count=2 '"type":"gate-reopen"' lyceum/events.jsonl
+exec lyceum check --ci
+! stderr 'fail: reopen'
+
+-- testing.txt --
+testing
+-- cause.txt --
+cause
+-- t.sh --
+sh ./src/login_test.sh TestLoginPlus
+-- login-broken.sh --
+login_plus() { echo broken; }
+-- login-fixed.sh --
+login_plus() { echo ok; }
+-- other.sh --
+other() { echo other; }
+-- login_test.sh --
+# TestLoginPlus
+. ./src/login.sh
+if [ "$(login_plus)" = ok ]; then echo "ok $1"; else echo "--- FAIL: $1"; exit 1; fi
+-- TESTING.md --
+---
+lyceum: 1
+suite: sh ./t.sh
+single: sh ./src/login_test.sh {name}
+test_files: ["**/*_test.sh"]
+---
+
+# TESTING.md
