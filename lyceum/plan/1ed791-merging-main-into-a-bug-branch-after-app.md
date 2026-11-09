@@ -25,13 +25,24 @@ to resolve conflicts in `lyceum/SPEC.md`, `lyceum/LIBRARY.md` and `lyceum/spec/e
 failed `approval-integrity` on all three ("the cause approval no longer matches …: it changed after it was
 approved"), and PR #34 was merged through a red `check`.
 
+Asked how the owner should approve merged content (A: drift on a cause-hashed file at `close` sends the bug
+back to `cause` with a reopen event; B: allow `approve cause` at `close`; C: ignore drift that came from main),
+the owner chose:
+
+> A
+
 ## What and why
 
 - **Symptom:** a bug at `close` whose branch takes main in (to resolve a conflict or catch up) fails
   `approval-integrity` for every cause-hashed file main also changed. The only `Next:` is to restore the file,
   which would undo main's change. `approve cause` refuses at `close` ("unit is at gate close"), and `amend`
   refuses for bugs, so the owner has no way to approve the merged content.
-- **Expected:** to be decided with the owner (see the opening checkpoint).
+- **Expected:** when a bug is at `close` (cause approved, not closed) and a file its cause approval hashed no
+  longer matches, the CLI reopens it to `cause` with a `gate-reopen` event naming the files, the same mechanism
+  that reopens to `fix` on a code change after verify. Code changes keep reopening to `fix` (verify must re-run
+  first). Once reopened, `approval-integrity` does not fail on that drift (it is a pending re-approval, not a
+  bypass); `check` points to `lyceum approve cause`, and re-approving hashes the merged content
+  [DERIVED: owner chose A]. A closed unit is never reopened.
 - **Trigger:** approve cause, then merge a main that edited a file the cause approval hashed (area file,
   `SPEC.md`, `LIBRARY.md`, or a code file), then run `check --ci`.
 - **Not this bug:** the `scope` warning on `internal/check/check.go` seen on #34 came from a revert/reapply of
