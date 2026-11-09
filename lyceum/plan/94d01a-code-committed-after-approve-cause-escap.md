@@ -4,8 +4,23 @@ type: bug
 title: code committed after approve cause escapes verify and re-approval
 branch: fix/94d01a-code-committed-after-approve-cause-escap
 status: implemented
-gate: cause
-approvals: []
+gate: close
+approvals:
+  - gate: cause
+    hashes:
+      .agents/skills/lyceum-bug/SKILL.md: sha256:9fb9ed110dce2deefb706606d8247de03dbd9ad59c237b50e42ef4c1e336f197
+      .claude/skills/lyceum-bug/SKILL.md: sha256:9fb9ed110dce2deefb706606d8247de03dbd9ad59c237b50e42ef4c1e336f197
+      internal/check/check.go: sha256:259da18056f035f4e32cd3dba6cdf165dd89538881337323f81f2f7ddca6d85c
+      internal/cli/reopen.go: sha256:2618bf239af1e2dbf2f0c61d5d6f1fb4c1872c445f4ce6f0d92212de2555e11d
+      internal/templates/skills/bug/SKILL.md: sha256:9fb9ed110dce2deefb706606d8247de03dbd9ad59c237b50e42ef4c1e336f197
+      lyceum/LIBRARY.md: sha256:a1b5f59dc9f63bd3aca8705b887b6f68572c60eba605e488080f84f73906067b
+      lyceum/SPEC.md: sha256:fc9bd6ae92f0fdc4e4819f0a7eeda9c0df1d48968cf077373265e8bca399ed92
+      lyceum/plan/94d01a-code-committed-after-approve-cause-escap.md: sha256:dae0e856f97a2e8b48885f5291a76dd5472dd7769ead2d7810d7bdb3039b05fa
+      lyceum/spec/enforcement.md: sha256:d2882370f8a6ddf2bd69bad46846c6021412c685624c51ef8a0e2de988ca7652
+      lyceum/spec/test-runner.md: sha256:f8e333ff14e484e04610ba80128c7f71a5e5b27e7be153b1027a199d11efe212
+    commit: 76e3de4
+    by: oritromax@gmail.com
+    at: 2026-11-09T16:13:34Z
 acs: [AC204]
 files:
   - internal/check/check.go
