@@ -3,8 +3,8 @@ id: c3ede6-capture-briefs-verbatim-and-confirm-at-b
 type: feat
 title: capture briefs verbatim and confirm at both ends
 branch: feat/c3ede6-capture-briefs-verbatim-and-confirm-at-b
-status: in-progress
-gate: build
+status: implemented
+gate: close
 approvals:
   - gate: spec
     hashes:
