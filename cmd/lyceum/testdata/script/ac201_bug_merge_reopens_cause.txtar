@@ -1,0 +1,93 @@
+# AC201: given a bug at close (cause approved, not closed) and a later commit, such as a merge of main, that
+# changes a file its cause approval hashed and no code, when status or a local check runs, then the bug goes
+# back to cause with one gate-reopen event naming the files; check --ci then reports no approval-integrity
+# failure for that drift but the cause finding, and approve cause hashes the new content.
+# ttyrun runs the command on a pty, so stdin and stdout are both a terminal.
+cd $REPO
+exec lyceum init
+mkdir src
+cp $WORK/TESTING.md TESTING.md
+cp $WORK/t.sh t.sh
+cp $WORK/login-broken.sh src/login.sh
+exec git add -A
+exec git commit -q -m 'setup'
+ttyrun $WORK/testing.txt 'lyceum approve testing'
+stdout '^exit=0$'
+exec lyceum add bug 'Login plus'
+cp $WORK/login_test.sh src/login_test.sh
+exec git add -A
+exec git commit -q -m 'repro test'
+exec lyceum test --repro TestLoginPlus
+stdout '^Cleared repro for 6ae678-login-plus$'
+cp $WORK/login-fixed.sh src/login.sh
+exec sh -c 'printf "\nThe bug notes.\n" >> lyceum/SPEC.md'
+exec git add -A
+exec git commit -q -m 'fix'
+exec lyceum test
+stdout '^Cleared verify for 6ae678-login-plus$'
+ttyrun $WORK/cause.txt 'lyceum approve cause'
+stdout '^exit=0$'
+grep '^gate: close$' lyceum/plan/6ae678-login-plus.md
+grep '"type":"approve","unit":"6ae678-login-plus",.*"gate":"cause","hashes":\{.*"lyceum/SPEC.md":"sha256:' lyceum/events.jsonl
+exec lyceum check --ci
+! stdout '^fail:'
+
+# A commit like a merge of main changes lyceum/SPEC.md, which the cause approval hashed, and no code.
+exec sh -c 'printf "\nMain''s notes.\n" >> lyceum/SPEC.md'
+exec git commit -q -am 'merge main'
+
+# status sends the bug back to cause, records why, and commits it.
+exec lyceum status
+stdout '^Back to cause for 6ae678-login-plus: .*lyceum/SPEC.md'
+stdout '^Gate: cause$'
+grep '^gate: cause$' lyceum/plan/6ae678-login-plus.md
+grep -count=1 '"type":"gate-reopen"' lyceum/events.jsonl
+grep '"type":"gate-reopen","unit":"6ae678-login-plus",.*"gate":"cause","reason":"[^"]*lyceum/SPEC.md' lyceum/events.jsonl
+exec git log -1 --format=%s
+stdout '^lyceum: reopen cause 6ae678-login-plus$'
+exec git status --porcelain
+! stdout .
+
+# A local check reopens nothing twice.
+exec lyceum check
+! stdout '^Back to'
+grep -count=1 '"type":"gate-reopen"' lyceum/events.jsonl
+
+# The drift is a pending re-approval: no approval-integrity failure, and check points at approve cause.
+! exec lyceum check --ci
+! stderr 'approval-integrity'
+stderr '^  fail: cause: '
+stderr '^Next: run "lyceum approve cause" yourself in a terminal$'
+
+# approve cause hashes the merged content and clears it.
+ttyrun $WORK/cause.txt 'lyceum approve cause'
+stdout '^exit=0$'
+grep 'Approved cause for 6ae678-login-plus' $WORK/tty.out
+grep '^gate: close$' lyceum/plan/6ae678-login-plus.md
+exec lyceum check --ci
+! stdout '^fail:'
+! stderr 'fail:'
+
+-- testing.txt --
+testing
+-- cause.txt --
+cause
+-- t.sh --
+sh ./src/login_test.sh TestLoginPlus
+-- login-broken.sh --
+login_plus() { echo broken; }
+-- login-fixed.sh --
+login_plus() { echo ok; }
+-- login_test.sh --
+# TestLoginPlus
+. ./src/login.sh
+if [ "$(login_plus)" = ok ]; then echo "ok $1"; else echo "--- FAIL: $1"; exit 1; fi
+-- TESTING.md --
+---
+lyceum: 1
+suite: sh ./t.sh
+single: sh ./src/login_test.sh {name}
+test_files: ["**/*_test.sh"]
+---
+
+# TESTING.md

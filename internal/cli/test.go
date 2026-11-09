@@ -106,12 +106,12 @@ func runTest(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	// Before the run, so it runs for the gate the bug is really at.
-	reopened, err := reopenBug(root, p)
+	toCause, reopened, err := reopenBug(root, p)
 	if err != nil {
 		return err
 	}
-	if reopened != "" && !asJSON {
-		_, _ = io.WriteString(stdout, reopenedLine(p.ID, reopened))
+	if !asJSON && (toCause != "" || reopened != "") {
+		_, _ = io.WriteString(stdout, reopenedLines(p.ID, toCause, reopened))
 	}
 	if cmd.Flags().Changed("repro") {
 		name, _ := cmd.Flags().GetString("repro")

@@ -92,7 +92,7 @@ func runApprove(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	asJSON, _ := cmd.Flags().GetBool("json")
-	reopened, err := reopenBug(root, p)
+	toCause, reopened, err := reopenBug(root, p)
 	if err != nil {
 		return err
 	}
@@ -100,8 +100,8 @@ func runApprove(cmd *cobra.Command, args []string) error {
 		return out.Refuse(what, fmt.Sprintf("unit %s went back to %s: %s", p.ID, gate.Fix, reopened),
 			`run "lyceum test" so verify clears again, then run "lyceum approve cause" yourself in a terminal`)
 	}
-	if reopened != "" && !asJSON {
-		_, _ = io.WriteString(cmd.OutOrStdout(), reopenedLine(p.ID, reopened))
+	if !asJSON && (toCause != "" || reopened != "") {
+		_, _ = io.WriteString(cmd.OutOrStdout(), reopenedLines(p.ID, toCause, reopened))
 	}
 	// testing and project are repo-wide: they need no unit, and
 	// neither does a bare walk, which may find only testing pending.
