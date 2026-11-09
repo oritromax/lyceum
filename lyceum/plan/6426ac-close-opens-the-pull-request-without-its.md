@@ -3,8 +3,8 @@ id: 6426ac-close-opens-the-pull-request-without-its
 type: bug
 title: close opens the pull request without its close commit
 branch: fix/6426ac-close-opens-the-pull-request-without-its
-status: in-progress
-gate: diagnose
+status: implemented
+gate: cause
 approvals: []
 files: [internal/cli/pr.go, internal/gitx/gitx.go, cmd/lyceum/testdata/script/ac034_close_opens_pr.txtar, cmd/lyceum/testdata/script/ac126_close_prints_push_merge.txtar, internal/templates/skills/bug/SKILL.md, internal/templates/skills/chore/SKILL.md, internal/templates/skills/doc/SKILL.md, internal/templates/skills/feat/SKILL.md, internal/templates/skills/refactor/SKILL.md, internal/templates/skills/test/SKILL.md, .agents/skills/lyceum-bug/SKILL.md, .agents/skills/lyceum-chore/SKILL.md, .agents/skills/lyceum-doc/SKILL.md, .agents/skills/lyceum-feat/SKILL.md, .agents/skills/lyceum-refactor/SKILL.md, .agents/skills/lyceum-test/SKILL.md, README.md, docs-site/src/content/docs/concepts/units-and-gates.md, docs-site/src/content/docs/start/quickstart.md]
 acs: [AC200]
