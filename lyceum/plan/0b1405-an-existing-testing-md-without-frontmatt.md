@@ -14,6 +14,7 @@ files:
   - internal/cli/status.go
   - internal/templates/skills/init/SKILL.md
   - .agents/skills/lyceum-init/SKILL.md
+  - .claude/skills/lyceum-init/SKILL.md
   - README.md
   - docs-site/src/content/docs/guides/existing-projects.md
 ---
