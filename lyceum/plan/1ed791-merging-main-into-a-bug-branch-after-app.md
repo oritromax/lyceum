@@ -16,6 +16,7 @@ files:
   - internal/cli/test.go
   - internal/templates/skills/bug/SKILL.md
   - .agents/skills/lyceum-bug/SKILL.md
+  - .claude/skills/lyceum-bug/SKILL.md
 ---
 
 ## Brief
