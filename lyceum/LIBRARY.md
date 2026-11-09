@@ -10,3 +10,4 @@
 - bug: a change to cause-approved files at close sends the bug back to cause (AC201)
 - bug: an AC ID defined twice in one area file fails check (AC202)
 - bug: init names a kept TESTING.md that is not in Lyceum's format, and status no longer sends it to approve testing (AC203)
+- bug: code the branch commits after approve cause sends the bug back to fix (AC204)

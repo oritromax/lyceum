@@ -92,7 +92,8 @@ Once the owner has approved `cause`, run `lyceum close`. It sets the plan to clo
 PR, or prints the commands left to run.
 
 If a commit after `approve cause`, such as a merge of main, changes a file it hashed, the CLI sends the bug back to
-`cause`; a code change then goes on to `fix`. Clear `verify` again if it asks.
+`cause`; a code change then goes on to `fix`. Code the branch itself commits after `approve cause` sends it
+straight back to `fix`; code that came only from a merge of main does not. Clear `verify` again if it asks.
 Tell the owner: "Run `lyceum approve cause` again yourself in a separate terminal." It hashes the new content.
 
 A bug has no plan to amend: `lyceum amend` refuses. If diagnosis finds a different cause than the one being

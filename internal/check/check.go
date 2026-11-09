@@ -287,7 +287,7 @@ func CauseApproval(ctx Context) ([]Finding, error) {
 		ctx.Plan.Gate != string(gate.Cause) && ctx.Plan.Gate != string(gate.Close) {
 		return nil, nil
 	}
-	if reason, err := Reopened(ctx.Root, ctx.Plan, ctx.Events); err != nil || reason != "" {
+	if reason, err := Reopened(ctx.Root, ctx.Plan, ctx.Events, ctx.Changed); err != nil || reason != "" {
 		return nil, err
 	}
 	verified, approved := false, false
@@ -1041,7 +1041,7 @@ func TestingDrift(ctx Context) ([]Finding, error) {
 const ReopenCheck = "reopen"
 
 // Reopen reports a bug at close whose cause approval no longer matches
-// (CauseDrift), which sends it back to cause, or a bug at cause with a code
+// (CauseDrift), which sends it back to cause, or a bug at cause or close with a code
 // commit after its verify clear (Reopened), which sends it back to fix. Locally the CLI
 // writes the gate-reopen first, so only --ci finds it.
 func Reopen(ctx Context) ([]Finding, error) {
@@ -1058,7 +1058,7 @@ func Reopen(ctx Context) ([]Finding, error) {
 			Next:     `run "lyceum status" locally so the bug goes back to cause, then run "lyceum approve cause" yourself in a terminal`,
 		}}, nil
 	}
-	reason, err := Reopened(ctx.Root, ctx.Plan, ctx.Events)
+	reason, err := Reopened(ctx.Root, ctx.Plan, ctx.Events, ctx.Changed)
 	if err != nil || reason == "" {
 		return nil, err
 	}
@@ -1169,15 +1169,18 @@ func Amended(evs []events.Event, id string) (a events.Event, ok bool) {
 	return a, ok
 }
 
-// Reopened says why bug p at cause goes back to fix: a commit after its
-// latest verify clear in evs changes a file that is neither a test (TESTING.md
-// test_files) nor under lyceum/. It returns "" when p is not a bug at
-// cause or no such commit follows the clear.
-func Reopened(root string, p *unit.Plan, evs []events.Event) (string, error) {
+// Reopened says why bug p at cause, or open at close, goes back to fix: a
+// commit after its latest verify clear in evs changes a file that is neither a
+// test (TESTING.md test_files) nor under lyceum/. At close the file must also
+// be in own, the branch's own diff from its base, so code merged in from the
+// base branch does not count (AC204). It returns "" when p is not such a bug
+// or no such commit follows the clear.
+func Reopened(root string, p *unit.Plan, evs []events.Event, own []string) (string, error) {
 	if !guard.ReopenEnabled {
 		return "", nil
 	}
-	if p == nil || p.Type != string(gate.Bug) || p.Gate != string(gate.Cause) {
+	if p == nil || p.Type != string(gate.Bug) ||
+		p.Gate != string(gate.Cause) && (p.Gate != string(gate.Close) || p.Status == unit.StatusClosed) {
 		return "", nil
 	}
 	since := ""
@@ -1199,7 +1202,8 @@ func Reopened(root string, p *unit.Plan, evs []events.Event) (string, error) {
 	}
 	var code []string
 	for _, f := range committed {
-		if !strings.HasPrefix(f, "lyceum/") && !acmap.MatchAny(globs, f) {
+		if !strings.HasPrefix(f, "lyceum/") && !acmap.MatchAny(globs, f) &&
+			(p.Gate == string(gate.Cause) || slices.Contains(own, f)) {
 			code = append(code, f)
 		}
 	}

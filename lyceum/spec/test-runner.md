@@ -109,7 +109,8 @@ it in `acs:`. An AC row or bullet ending `(Deferred after v1, …)` is not requi
   diff, `baseline` clears only after a counting `approve tests` covers them.
 - **`approve cause`** refuses a dirty tree, so every approved fix file is committed and was in the suite run.
   `approve cause --no-repro` is confirmed by typing `cause`; it hashes nothing.
-- A code commit on a bug after `verify` clears sends it back to `fix`: `verify` must clear again before
+- A code commit on a bug after `verify` clears sends it back to `fix`, at `close` too when the code is in the
+  branch's own diff (AC204): `verify` must clear again before
   `approve cause`. `approve tests` is also available for a refactor at `build`.
 - `check` allows characterization tests while a refactor is at `plan`.
 - **Refactor benchmark:** `intent` records `benchmark: <command>` in the plan; `verify` runs it and requires
