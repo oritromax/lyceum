@@ -1,0 +1,56 @@
+# AC198: given two area files that both define the same AC ID, when check runs, then it fails naming the ID and every file defining it, and the registry hint never suggests registering an ID another area already defines
+cd $REPO
+exec lyceum init
+mkdir lyceum/spec
+cp $WORK/billing.md lyceum/spec/billing.md
+cp $WORK/orders.md lyceum/spec/orders.md
+
+# Both rows list AC1: check --ci fails naming AC1 and both files; locally it is reported.
+cp $WORK/spec-both.md lyceum/SPEC.md
+exec git add -A
+exec git commit -q -m 'AC1 in two areas, both registered'
+exec sh -c 'lyceum check --ci; echo "exit=$?"'
+stdout '^exit=2$'
+stderr 'registry: AC1 is defined in more than one area file: lyceum/spec/billing.md, lyceum/spec/orders.md$'
+exec lyceum check
+stdout 'AC1 is defined in more than one area file: lyceum/spec/billing.md, lyceum/spec/orders.md$'
+
+# Only billing's row lists AC1: the duplicate is named, and no hint says to add AC1 to orders' row.
+cp $WORK/spec-one.md lyceum/SPEC.md
+exec git add -A
+exec git commit -q -m 'AC1 in two areas, one registered'
+exec sh -c 'lyceum check --ci; echo "exit=$?"'
+stdout '^exit=2$'
+stderr 'registry: AC1 is defined in more than one area file: lyceum/spec/billing.md, lyceum/spec/orders.md$'
+! stderr 'omits ACs it defines: AC1'
+! stderr 'add them to the row of lyceum/spec/orders.md'
+
+-- billing.md --
+# Billing
+
+| ID | Criterion |
+|---|---|
+| AC1 | Given a, then b |
+-- orders.md --
+# Orders
+
+- **AC1** Given c, then d
+- **AC2** Given e, then f
+-- spec-both.md --
+# Specification index
+
+## Area registry
+
+| Area | File | Covers | ACs |
+|---|---|---|---|
+| billing | `spec/billing.md` | Billing | AC1 |
+| orders | `spec/orders.md` | Orders | AC1–AC2 |
+-- spec-one.md --
+# Specification index
+
+## Area registry
+
+| Area | File | Covers | ACs |
+|---|---|---|---|
+| billing | `spec/billing.md` | Billing | AC1 |
+| orders | `spec/orders.md` | Orders | AC2 |
