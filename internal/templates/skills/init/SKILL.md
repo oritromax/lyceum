@@ -17,6 +17,9 @@ No application code in this skill. Write only `lyceum/SPEC.md` and files under `
 
 1. Interview the owner about the project, scaled to what they've already said:
    - The first question is open, with no options: what are you building, and for whom? Stop and wait.
+   - Opening checkpoint: before any other question, save the owner's brief verbatim to `lyceum/spec/brief.md`,
+     word for word, and append each further message to it. A first reply may be the first of several. Then ask
+     once "Anything to add, or shall I proceed?" and ask numbered questions only after the owner says proceed.
    - After that: numbered questions, lettered options, your recommended option first, then stop and wait.
    - Use the harness's structured-question tool when it has one.
    - Never ask what the owner already answered. Options are concrete alternatives.
@@ -29,14 +32,22 @@ No application code in this skill. Write only `lyceum/SPEC.md` and files under `
    - Define each AC as a table row `| ACn | Given … |` or a bullet `- **ACn** Given …`, one per AC, with the ID
      leading the line.
    - Every AC must be testable. Describe behaviour, not implementation.
-   - Mark text the owner did not state: `[DERIVED: why]` or `[AGENT-PROPOSED: what]`. `approve project` lists those lines.
+   - Mark spec text the brief does not state, checked against `lyceum/spec/brief.md`: `[DERIVED: why]` or
+     `[AGENT-PROPOSED: what]`. `approve project` lists those lines.
 3. Register every area in the area registry table of `lyceum/SPEC.md`, one row each:
    ``| <area> | `spec/<area>.md` | <what it covers> | <its AC IDs> |``. Change nothing else in that file.
-4. STOP. Summarise in a few lines: the areas, what each covers, the AC count, and any `[NEEDS CLARIFICATION]`.
+   Register `brief.md` as area `brief` too, with an empty ACs cell, so `approve project` freezes the brief.
+4. Closing checkpoint: ask "Anything to add, or shall I consider the spec ready?". Append each addition to
+   `brief.md`, update the areas and ACs, and ask again. Give the approve command only after the owner says ready.
+   - "Ready" is not an approval: it only lets you hand over the approve command. Under
+     `approvals.harness_prompt: allow`, running `lyceum approve` still needs a separate request from the owner.
+   - Late additions skip the two-round limit: they go straight into the spec (area files and ACs), and anything
+     still uncertain is left as `[NEEDS CLARIFICATION: …]`.
+5. STOP. Summarise in a few lines: the areas, what each covers, the AC count, and any `[NEEDS CLARIFICATION]`.
    Tell the owner: "Run `lyceum approve project` yourself in a separate terminal."
    It hashes `lyceum/SPEC.md` and every registered area file. `lyceum status` shows `project` pending until then.
-5. After the approval, the first slice of work is a feature: `lyceum add feat "<title>"`, then the `lyceum-feat`
-   skill.
+6. After the approval, the first slice of work is a feature: `lyceum add feat "<title>"`, then the `lyceum-feat`
+   skill. From then on a unit's brief goes in its plan's `## Brief`, never in `brief.md`.
 
 ## Brownfield: offer a baseline
 

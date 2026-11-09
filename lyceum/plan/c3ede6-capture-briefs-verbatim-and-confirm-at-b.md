@@ -82,6 +82,8 @@ acs: [AC185, AC186, AC187, AC188, AC189, AC190, AC191, AC192, AC193, AC194, AC19
 
 ## Progress
 
+- [x] Step 1: `init` skill checkpoints, `brief` row, provenance (71 lines).
+
 ## Log
 
 - Owner decisions in the brief: checkpoints 1–7 as listed in "Checkpoints"; hash approach left to the agent
