@@ -4,8 +4,26 @@ type: bug
 title: merging main into a bug branch after approve cause breaks its approval
 branch: fix/1ed791-merging-main-into-a-bug-branch-after-app
 status: implemented
-gate: cause
-approvals: []
+gate: close
+approvals:
+  - gate: cause
+    hashes:
+      .agents/skills/lyceum-bug/SKILL.md: sha256:77f9e4e7aa7d1f13d5be98d2460c027dae7409e047615ff482313ffef25c9dfb
+      .claude/skills/lyceum-bug/SKILL.md: sha256:77f9e4e7aa7d1f13d5be98d2460c027dae7409e047615ff482313ffef25c9dfb
+      internal/check/check.go: sha256:e190ff02379a00c519369dc0c4c62497e8797be045b1e873bea4be6064122ab9
+      internal/cli/approve.go: sha256:4fcedd42e032d4dd635d93da1d39089e979fb68dfa14968883dc3d30ff4971b4
+      internal/cli/check.go: sha256:b3a3d2a5b117b21f3d615eabe552682c2e1301a0c1d8a6af193e51820a9b344e
+      internal/cli/reopen.go: sha256:441c00ed2e6cbd9751e0e8e8df53a8645bfdd0edfa2d70d2bb22d770b2644bf3
+      internal/cli/status.go: sha256:2bdf0c4889e3f597849ac4cad5d0a568c167be4e0426001afe7f0c5ee3e313e5
+      internal/cli/test.go: sha256:3a7f2d9556596b27a8e8dd32bcaa0adae8b2eee2ee2bf4a9a94a304cfd6dcbf4
+      internal/templates/skills/bug/SKILL.md: sha256:77f9e4e7aa7d1f13d5be98d2460c027dae7409e047615ff482313ffef25c9dfb
+      lyceum/LIBRARY.md: sha256:b160397596959699454e561ea3d5c6eb81b7e976c5fd6047b57faed46f4fb83b
+      lyceum/SPEC.md: sha256:5f92c3f525310e438dba23ae23f3d71d32d943a22a148774e4f9f86c25549617
+      lyceum/plan/1ed791-merging-main-into-a-bug-branch-after-app.md: sha256:0a553165e3eb54259e8821bcd088a2a680185c79d2ba79cb24c0bca9ef7e9e9d
+      lyceum/spec/enforcement.md: sha256:7ee75a889f63e75fed19e67b0f02734387a09d83fa0545e843b854644e4d0f45
+    commit: 5e841f6
+    by: oritromax@gmail.com
+    at: 2026-11-09T09:17:53Z
 acs: [AC201]
 files:
   - internal/check/check.go
