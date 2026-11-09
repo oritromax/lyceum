@@ -23,18 +23,26 @@ Observed the same day: ten units (5b4f1f, c3ede6, 6b21e1, d20234, e0b7ea, e7033e
 had their PRs merged while `lyceum close`'s commit (`status: closed` + the `close` event) sat only in the local
 branch, so main kept listing them at `close` until PR #33 carried the commits over by hand.
 
+Asked whether `close` should refuse to open the PR until he pushes (A) or push the branch itself and then open
+it (B), the owner chose:
+
+> B, cause that was my initial idea
+
 ## What and why
 
 - **Symptom:** `close` commits the closed plan and the `close` event, then, when the branch already has an
   upstream, runs `gh pr create` (or `glab mr create`) straight away. The close commit is not on the remote, so the
   PR opens without it; the only hint is the trailing `Next: push the close commit so the pull request has it`. If
   the owner merges before pushing, main never records the close.
-- **Expected:** `close` never opens a pull request that lacks the close commit. When the branch has an upstream
-  and the local branch is ahead of it, `close` does not run `gh`/`glab`; it prints the push and then the exact
-  create command, the same shape as the no-upstream case. Lyceum still never pushes
-  [DERIVED: openPR's doc comment and units.md "Close" step 5 — the CLI prints the push, it does not run it].
+- **Expected:** `close` pushes the unit branch itself after the close commit and before it opens the pull
+  request, so the PR always carries the close: `git push -u origin <branch>` when the branch has no upstream,
+  `git push` to its upstream otherwise, then `gh pr create` / `glab mr create` as today. With no `gh`/`glab`
+  it still pushes, then prints the create step. If the push fails, the unit stays closed (the commit is local),
+  `close` opens no PR and prints the exact push and create commands to run by hand. With no origin remote,
+  nothing changes. This reverses "Lyceum never pushes" for `close` only; no other command pushes
+  [DERIVED: owner chose B].
 - **Trigger:** push the branch (e.g. to run CI) before `lyceum close`, then run `lyceum close`.
-- **Out of scope:** making `close` push; detecting PRs already merged without a close (that is what PR #33
+- **Out of scope:** force pushes or pushing any branch other than the unit's own; detecting PRs already merged without a close (that is what PR #33
   fixed by hand).
 
 ## Spec delta
