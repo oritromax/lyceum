@@ -3,7 +3,7 @@ id: 0b1405-an-existing-testing-md-without-frontmatt
 type: bug
 title: an existing TESTING.md without frontmatter leaves brownfield init at a dead end
 branch: fix/0b1405-an-existing-testing-md-without-frontmatt
-status: implemented
+status: closed
 gate: close
 approvals:
   - gate: cause
