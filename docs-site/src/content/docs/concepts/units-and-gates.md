@@ -57,7 +57,10 @@ If no automated test can reproduce the bug, the agent explains why and stops. On
 lyceum approve cause --no-repro "<reason>"
 ```
 
-`verify` and `cause` are still required. A code commit after `verify` sends the bug back to `fix`.
+`verify` and `cause` are still required. A code commit after `verify` sends the bug back to `fix`. This holds after you approve the cause too, until the bug is closed:
+
+- If a file your `cause` approval covered changes, for example when you merge `main` into the branch, the bug goes back to `cause` and you approve it again.
+- If the branch's own changes gain new code after `verify`, the bug goes back to `fix`, `verify` must pass again and you approve the cause again. Code that only came in by merging the base branch doesn't count.
 
 ### Refactor
 

@@ -12,7 +12,7 @@
 | `lyceum approve [gate]` | Owner-only approval from a real terminal; bare form walks every pending gate | enforcement.md |
 | `lyceum plan [--new-area <name>]` | Show the plan, add an area, or upgrade a trivial chore | units.md |
 | `lyceum amend [unit] [--intent] "<reason>"` | Reopen an approved plan mid-build | units.md |
-| `lyceum close [unit]` | Fold the spec delta, close the unit, open a PR | units.md |
+| `lyceum close [unit]` | Check and close the unit, push its branch, open a PR | units.md |
 | `lyceum test [subset]` | Run the suite or a subset and record the run | test-runner.md |
 | `lyceum log` | Project history | below |
 | `lyceum eject` | Remove Lyceum's installed adapters, keep the records | distribution.md |
