@@ -3,8 +3,8 @@ id: 9bcd7a-check-action-gives-up-on-a-504-from-the
 type: bug
 title: check action gives up on a 504 from the release download
 branch: fix/9bcd7a-check-action-gives-up-on-a-504-from-the
-status: in-progress
-gate: diagnose
+status: implemented
+gate: cause
 approvals: []
 files: [check-action/run.sh, check-action/action.yml, cmd/lyceum/script_test.go, cmd/lyceum/testdata/script/ac199_check_action_download_fallback.txtar, docs/ci.md, docs-site/src/content/docs/guides/ci.md]
 acs: [AC199]
