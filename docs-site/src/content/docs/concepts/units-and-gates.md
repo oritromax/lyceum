@@ -89,7 +89,7 @@ The CLI moves `status` only at these points:
 
 ## Close
 
-`lyceum close` requires the unit's last gate before `close` to have cleared. It sets the status to `closed` and writes a `close` event; the plan file stays as history. With `gh` installed and a GitHub remote it opens a pull request (`glab` likewise for GitLab); otherwise it prints the exact push and merge commands. The merge itself is yours.
+`lyceum close` requires the unit's last gate before `close` to have cleared. It sets the status to `closed` and writes a `close` event; the plan file stays as history. With an origin remote it then pushes the unit branch, never forced: to its upstream, or with `-u` when it has none. `close` is the only command that pushes. With `gh` installed and a GitHub remote it then opens a pull request (`glab` likewise for GitLab); otherwise it prints the pull request step and the merge commands. If the push fails, the unit stays closed, no pull request is opened, and it prints the push and pull request commands to run. The merge itself is yours.
 
 ## Amend
 

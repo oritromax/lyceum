@@ -26,8 +26,8 @@ Gates for a doc: `draft` → `verify` (`lyceum test`) → `close`. No owner appr
 6. `verify`: with a clean tree, run `lyceum test`. It clears `verify` when the full suite passes and the branch
    changes no code file. In a project with no tests (no file matches `test_files`), it clears `verify` with no
    tests for a docs-only change. Quote the result; never claim it from reasoning.
-7. Once `verify` clears, run `lyceum close`. It sets the plan to closed and opens a PR, or prints the push and
-   merge commands. A doc has no owner approval, so there is no plan to amend.
+7. Once `verify` clears, run `lyceum close`. It sets the plan to closed, pushes the branch and opens a PR, or
+   prints the commands left to run. A doc has no owner approval, so there is no plan to amend.
 
 After a gate clears, any confirmation to proceed is a structured yes/no, never an open question.
 

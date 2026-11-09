@@ -103,9 +103,12 @@ mechanical `repro` gate plus the `cause` approval. `doc` and `test` change only 
 For `refactor`, refuses any spec diff other than `cites:` frontmatter.
 3. If TESTING.md changed in this unit, refuses until the owner re-runs `approve testing`.
 4. Sets status `closed`, writes a `close` event and commits the plan with it. The plan file stays as history.
-5. With `gh` installed and a GitHub remote, runs `gh pr create` from the unit branch to the base branch;
-   `glab` likewise for GitLab. Otherwise it prints the exact push and merge commands. The merge itself is the
-   owner's, and git history records it; no merge event is written.
+5. With an origin remote, pushes the unit branch, never forced: to its upstream, or with `-u` to origin when it
+   has none (AC200). `close` is the only command that pushes [DERIVED: plan 6426ac What and why]. If the push
+   fails, the unit stays closed and no pull request is opened; it prints the push and pull request commands.
+   With `gh` installed and a GitHub remote, it then runs `gh pr create` from the unit branch to the base branch;
+   `glab` likewise for GitLab. Otherwise it prints the pull request step and the merge commands. The merge
+   itself is the owner's, and git history records it; no merge event is written.
 
 A **test unit whose test fails**: `close` converts it to a bug instead of closing it. It writes an `add`
 event for a new bug unit on the same branch with the failing test recorded as the repro, so the bug starts past
@@ -238,7 +241,7 @@ are optional areas.
 | AC101 | Given a `refactor` whose plan's `public_surface:` list changed after `approve plan`, when `verify` would clear, then it does not clear and the output names the re-approval |
 | AC124 | Given a test unit whose test fails, when `close` runs, then the test unit is closed with `converted_to`, a bug unit exists on the same branch with that test as its repro, and the bug is at `diagnose` |
 | AC125 | Given a unit whose last pre-close gate is not cleared, when `close` runs, then it refuses and names that gate |
-| AC126 | Given `close` with no `gh` or `glab` or no remote, then it prints the push and merge commands and writes no merge event |
+| AC126 | Given `close` with no `gh` or `glab` or no remote, then it prints the merge commands, and the push when it did not push (AC200), and writes no merge event |
 | AC127 | Given `lyceum refactor "Split parser"`, then a refactor unit exists at `intent` on a `refactor/` branch; given `lyceum chore "Bump deps"`, then a chore unit exists at `build` |
 | AC128 | Given `lyceum plan` on a trivial chore, then it moves to `plan` and `check` requires the plan approval before code |
 | AC129 | Given a doc unit whose branch diff touches a code file, when `lyceum test` passes, then `verify` does not clear and names the file |
@@ -261,3 +264,4 @@ are optional areas.
 | AC194 | Given the `lyceum-feat` and `lyceum-bug` skills, then each says to ask "Anything to add, or shall I consider the spec ready?" before giving its approve command (`lyceum approve spec`, `lyceum approve cause`), to append each addition to `## Brief`, update the spec and plan and ask again, and to give the command only after the owner says ready |
 | AC195 | Given the `lyceum-doc` skill, then it says to ask "Anything to add, or shall I consider the doc ready?" before running `lyceum test`, to append each addition to `## Brief` and update the doc and ask again, and that a doc has no approval, so "ready" lets the agent run `lyceum test` |
 | AC196 | Given `lyceum/spec/brief.md` quoting an AC table row or an AC bullet led by the bold ID, then it defines no AC (no registry, unclaimed or coverage entry, and no file for an AC's lookup); and given a greenfield registry listing only `brief`, then `project` is not pending and `approve project` refuses, until another area is registered [DERIVED: the refusal and the lookups ignoring it follow from "ACs aren't read from brief.md" and "brief doesn't count as an area for the project gate"] |
+| AC200 | Given `close` with an origin remote, then after the close commit and before any pull request it pushes the unit branch, and only that branch, never forced: with `-u` to origin when it has no upstream, else to its upstream [DERIVED: plan 6426ac What and why] [AGENT-PROPOSED: the push names the branch and its upstream ref, so `push.default` cannot widen it, and is bounded by a 2-minute timeout]; then it opens the pull request as AC34, or with no `gh` or `glab` prints the pull request step and the merge commands; given the push fails, then the unit stays closed, no pull request is opened, and it prints the push and pull request commands to run by hand [DERIVED: plan 6426ac What and why]; given no origin remote, then it pushes nothing (AC126) |

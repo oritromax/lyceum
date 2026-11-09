@@ -19,16 +19,19 @@ const prTimeout = 2 * time.Minute
 // plainChars need no shell quoting in a printed command.
 const plainChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_./:@="
 
-// openPR is close's last step (units.md, "Close" step 5): it opens a
-// pull request for closed unit p, whose plan is planPath, from branch into
-// base, or prints how. With an origin on GitHub and gh on PATH it runs
-// `gh pr create`, and with one on GitLab and glab it runs `glab mr create`,
-// once the branch has an upstream; Lyceum never pushes, so without one it
-// prints the push first and runs neither. Otherwise it prints the exact push
-// and merge commands. The tool's output goes to w. The merge is the owner's,
-// and no merge event is written. It returns the next action.
+// openPR is close's last step (units.md, "Close" step 5): it pushes branch,
+// then opens a pull request for closed unit p, whose plan is planPath, from
+// branch into base, or prints how. With an origin remote it pushes branch,
+// and only branch, never forced: to its upstream when it has one, else with
+// -u to origin (gitx.PushArgs); close is the one command that pushes. If the
+// push fails, the unit stays closed, no pull request is opened, and it prints
+// the push and the pull request step to run by hand. Pushed, with an origin
+// on GitHub and gh on PATH it runs `gh pr create`, and with one on GitLab and
+// glab it runs `glab mr create`; otherwise it prints the pull request step
+// and the merge commands. With no origin it pushes nothing and prints the
+// local merge. The tool's output goes to w. The merge is the owner's, and no
+// merge event is written. It returns the next action.
 func openPR(w io.Writer, root, branch, base, planPath string, p *unit.Plan) (string, error) {
-	push := "git push -u origin " + branch
 	merge := fmt.Sprintf("git switch %s && git merge --no-ff %s", base, branch)
 	url, err := gitx.RemoteURL(root, "origin")
 	if err != nil {
@@ -57,10 +60,25 @@ func openPR(w io.Writer, root, branch, base, planPath string, p *unit.Plan) (str
 			tool = ""
 		}
 	}
+	pushArgs, err := gitx.PushArgs(root, branch)
+	if err != nil {
+		return "", err
+	}
+	push := "git " + strings.Join(pushArgs, " ")
+	pushErr := gitx.Push(root, pushArgs)
+	if pushErr == nil {
+		_, _ = fmt.Fprintf(w, "Pushed %s\n", branch)
+	}
 	if tool == "" {
 		merge += " && git push origin " + base
-		_, _ = fmt.Fprintf(w, "To push the branch:\n  %s\nThen open a pull request from %s into %s; or, to merge without one, the owner runs:\n  %s\n", push, branch, base, merge)
-		return fmt.Sprintf("%s, then open a pull request from %s into %s; the owner merges it", push, branch, base), nil
+		if pushErr != nil {
+			_, _ = fmt.Fprintf(w, "git push did not push %s (%v); the unit is closed. To push the branch:\n  %s\n", branch, pushErr, push)
+		}
+		_, _ = fmt.Fprintf(w, "Then open a pull request from %s into %s; or, to merge without one, the owner runs:\n  %s\n", branch, base, merge)
+		if pushErr != nil {
+			return fmt.Sprintf("%s, then open a pull request from %s into %s; the owner merges it", push, branch, base), nil
+		}
+		return fmt.Sprintf("open a pull request from %s into %s; the owner merges it", branch, base), nil
 	}
 
 	quoted := make([]string, len(args))
@@ -71,12 +89,8 @@ func openPR(w io.Writer, root, branch, base, planPath string, p *unit.Plan) (str
 		}
 	}
 	create := tool + " " + strings.Join(quoted, " ")
-	upstream, err := gitx.Upstream(root, branch)
-	if err != nil {
-		return "", err
-	}
-	if upstream == "" {
-		_, _ = fmt.Fprintf(w, "Branch %s has no upstream, and Lyceum does not push. Push it first:\n  %s\nthen open the pull request:\n  %s\n", branch, push, create)
+	if pushErr != nil {
+		_, _ = fmt.Fprintf(w, "git push did not push %s (%v); the unit is closed, and no pull request was opened. Push the branch:\n  %s\nthen open the pull request:\n  %s\n", branch, pushErr, push, create)
 		return fmt.Sprintf("%s, then run: %s", push, create), nil
 	}
 
@@ -93,5 +107,5 @@ func openPR(w io.Writer, root, branch, base, planPath string, p *unit.Plan) (str
 		return fmt.Sprintf("open the pull request by hand: %s", create), nil
 	}
 	_, _ = fmt.Fprintf(w, "Opened a pull request from %s into %s with %s\n", branch, base, tool)
-	return "push the close commit so the pull request has it: git push; the owner merges the pull request", nil
+	return "the owner merges the pull request", nil
 }

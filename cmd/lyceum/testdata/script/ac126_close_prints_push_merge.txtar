@@ -36,8 +36,9 @@ exec git merge -q --no-ff -m 'merge guide' docs/6ae678-guide
 exec lyceum check --ci
 ! stdout '^fail:'
 
-# A remote that is neither GitHub nor GitLab, with gh installed: the push and merge commands, and gh is not run.
-exec git remote add origin https://git.example.com/acme/app.git
+# A remote that is neither GitHub nor GitLab, with gh installed: close pushes (AC200), then prints the pull request step and merge commands, and gh is not run.
+exec git init -q --bare $WORK/git.example.com/acme/app.git
+exec git remote add origin $WORK/git.example.com/acme/app.git
 exec lyceum add doc 'Faq'
 cp $WORK/guide.md docs/faq.md
 exec git add -A
@@ -45,8 +46,8 @@ exec git commit -q -m 'faq'
 exec lyceum test
 exec lyceum close --json
 jsonobject
-stdout '"next":"git push -u origin docs/3f4fbd-faq, then open a pull request from docs/3f4fbd-faq into main; the owner merges it"'
-stderr '^  git push -u origin docs/3f4fbd-faq$'
+stdout '"next":"open a pull request from docs/3f4fbd-faq into main; the owner merges it"'
+stderr '^Pushed docs/3f4fbd-faq$'
 stderr '^  git switch main && git merge --no-ff docs/3f4fbd-faq && git push origin main$'
 ! exists $WORK/gh-args.txt
 ! grep '"type":"merge"' lyceum/events.jsonl

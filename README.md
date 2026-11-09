@@ -177,7 +177,7 @@ Gates: `spec` (you approve) → `build` → `verify` (recorded run) → `close`.
 | Verify | The agent runs `lyceum test` | `lyceum test` |
 | Close | The agent runs `lyceum close` | `lyceum close` |
 
-`close` folds the spec change into the area files and opens a PR, or prints the push and merge commands.
+`close` folds the spec change into the area files, pushes the branch and opens a PR, or prints the commands left to run.
 
 ### Fix a bug
 

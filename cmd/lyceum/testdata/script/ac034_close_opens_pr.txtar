@@ -1,5 +1,6 @@
 # AC34: given close with gh installed and a GitHub remote, then a PR is opened; given no gh, then the exact next command is printed
 # gh and glab here are fakes that record their arguments; the host's are hidden from scripts.
+# origin is a local bare repository at a path naming github.com, then gitlab.com, so close's push (AC200) stays local.
 cd $REPO
 exec lyceum init
 cp $WORK/TESTING.md TESTING.md
@@ -10,7 +11,9 @@ exec git commit -q -m 'setup'
 ttyin -stdin $WORK/testing.txt
 exec sh -c 'lyceum approve testing >/dev/tty; echo "exit=$?"'
 stdout '^exit=0$'
-exec git remote add origin https://github.com/acme/app.git
+exec git init -q --bare $WORK/github.com/acme/app.git
+exec git init -q --bare $WORK/gitlab.com/acme/app.git
+exec git remote add origin $WORK/github.com/acme/app.git
 mkdir $WORK/bin
 cp $WORK/fake-gh $WORK/bin/gh
 cp $WORK/fake-glab $WORK/bin/glab
@@ -32,11 +35,11 @@ exec lyceum close
 stdout '^Closed 6ae678-guide$'
 stdout '^https://github.com/acme/app/pull/1$'
 stdout '^Opened a pull request from docs/6ae678-guide into main with gh$'
-stdout '^Next: push the close commit so the pull request has it: git push; the owner merges the pull request$'
+stdout '^Next: the owner merges the pull request$'
 cmp $WORK/gh-args.txt $WORK/want-gh-args.txt
 ! grep '"type":"merge"' lyceum/events.jsonl
 
-# Not pushed: Lyceum does not push, so it prints the push and the gh command, and gh is not run.
+# Not pushed: close pushes the branch with -u, then runs gh (AC200).
 rm $WORK/gh-args.txt
 exec git switch -q main
 exec lyceum add doc 'Faq'
@@ -47,15 +50,13 @@ exec git commit -q -m 'faq'
 exec lyceum test
 exec lyceum close
 stdout '^Closed 3f4fbd-faq$'
-stdout '^Branch docs/3f4fbd-faq has no upstream, and Lyceum does not push. Push it first:$'
-stdout '^  git push -u origin docs/3f4fbd-faq$'
-stdout '^  gh pr create --base main --head docs/3f4fbd-faq --title Faq --body ''Plan: lyceum/plan/3f4fbd-faq.md; ACs: none''$'
-stdout '^Next: git push -u origin docs/3f4fbd-faq, then run: gh pr create '
-! exists $WORK/gh-args.txt
+stdout '^Pushed docs/3f4fbd-faq$'
+stdout '^Opened a pull request from docs/3f4fbd-faq into main with gh$'
+exists $WORK/gh-args.txt
 
 # A GitLab remote, with glab: close runs glab mr create.
 exec git switch -q main
-exec git remote set-url origin git@gitlab.com:acme/app.git
+exec git remote set-url origin $WORK/gitlab.com/acme/app.git
 exec lyceum add doc 'Notes'
 mkdir docs
 cp $WORK/guide.md docs/notes.md
@@ -68,10 +69,11 @@ exec lyceum close
 stdout '^Opened a pull request from docs/e91b6e-notes into main with glab$'
 cmp $WORK/glab-args.txt $WORK/want-glab-args.txt
 
-# No gh: the exact push and merge commands are printed.
+# No gh: close pushes, then the pull request step and the merge commands are printed.
+rm $WORK/gh-args.txt
 rm $WORK/bin/gh
 exec git switch -q main
-exec git remote set-url origin https://github.com/acme/app.git
+exec git remote set-url origin $WORK/github.com/acme/app.git
 exec lyceum add doc 'Tips'
 mkdir docs
 cp $WORK/guide.md docs/tips.md
@@ -81,8 +83,7 @@ exec lyceum test
 exec git update-ref refs/remotes/origin/docs/b88b73-tips HEAD
 exec git branch -q --set-upstream-to=origin/docs/b88b73-tips
 exec lyceum close
-stdout '^To push the branch:$'
-stdout '^  git push -u origin docs/b88b73-tips$'
+stdout '^Pushed docs/b88b73-tips$'
 stdout '^Then open a pull request from docs/b88b73-tips into main; or, to merge without one, the owner runs:$'
 stdout '^  git switch main && git merge --no-ff docs/b88b73-tips && git push origin main$'
 ! exists $WORK/gh-args.txt

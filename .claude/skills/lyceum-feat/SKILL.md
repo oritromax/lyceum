@@ -92,7 +92,7 @@ refuses one, stop and tell the owner. Never work around it.
 ## Gate `close`
 
 Once `verify` clears, run `lyceum close`. It checks that every area in `areas:` was in the spec approval, sets
-the plan to closed and opens a PR, or prints the push and merge commands.
+the plan to closed, pushes the branch and opens a PR, or prints the commands left to run.
 If TESTING.md changed in this unit, the owner runs `lyceum approve testing` first.
 
 ## Approvals are the owner's

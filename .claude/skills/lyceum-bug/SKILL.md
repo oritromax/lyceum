@@ -88,8 +88,8 @@ Any code commit after `verify` sends the bug back to `fix`: `verify` must clear 
 
 ## Gate `close`
 
-Once the owner has approved `cause`, run `lyceum close`. It sets the plan to closed and opens a PR, or prints
-the push and merge commands.
+Once the owner has approved `cause`, run `lyceum close`. It sets the plan to closed, pushes the branch and opens a
+PR, or prints the commands left to run.
 
 A bug has no plan to amend: `lyceum amend` refuses. If diagnosis finds a different cause than the one being
 fixed, stop and tell the owner, and offer `lyceum add bug "<title>"` for it.
