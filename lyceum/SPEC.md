@@ -32,7 +32,7 @@ In projects that use Lyceum the agent writes this table and `check` validates it
 | enforcement | `spec/enforcement.md` | `approve`, `check`, CI, hooks, signed approvals, bypass detection | AC39–AC54, AC108, AC118, AC121–AC123, AC139–AC149, AC166–AC167, AC169–AC175, AC178, AC181, AC184, AC197–AC199, AC201–AC202 |
 | test-runner | `spec/test-runner.md` | `lyceum test`, the TESTING.md schema, run records, mechanical gates, AC mapping | AC55–AC66, AC103–AC105, AC112–AC113, AC116, AC150–AC153, AC179–AC180 |
 | records | `spec/records.md` | `understand`, `trace`, `audit`, citations, freshness, lookup, export | AC67–AC82, AC133–AC136, AC138 |
-| distribution | `spec/distribution.md` | `init` install, harness support, packaging, platforms | AC83–AC94, AC111, AC119–AC120, AC137, AC163–AC165, AC176, AC182–AC183 |
+| distribution | `spec/distribution.md` | `init` install, harness support, packaging, platforms | AC83–AC94, AC111, AC119–AC120, AC137, AC163–AC165, AC176, AC182–AC183, AC203 |
 | commands | `spec/commands.md` | Reference: every command, its syntax, where it is defined, `status`, `log` | AC95–AC99, AC117, AC157–AC162, AC177 |
 
 ## Open items

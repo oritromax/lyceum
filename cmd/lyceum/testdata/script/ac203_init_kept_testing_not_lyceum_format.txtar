@@ -1,0 +1,44 @@
+# AC203: given a repo with its own TESTING.md without frontmatter, when init runs, then it names TESTING.md as kept but not in Lyceum's format; status does not send the owner to approve testing while it cannot be read, and doctor and approve testing say the file exists but is not in Lyceum's format, naming the required keys
+cd $REPO
+cp $WORK/go.mod go.mod
+cp $WORK/TESTING.md TESTING.md
+exec git add -A
+exec git commit -q -m 'own testing'
+cp TESTING.md $WORK/TESTING.orig
+
+stdin $WORK/defaults.txt
+exec lyceum init
+stdout '^Kept TESTING.md: .*not in Lyceum''s format'
+stdout '^Kept TESTING.md: .*lyceum: 1.*suite:'
+cmp TESTING.md $WORK/TESTING.orig
+exec git add -A
+exec git commit -q -m 'lyceum init' --no-verify
+
+# status does not point at an approval that cannot succeed.
+exec lyceum status
+! stdout 'approve testing'
+stdout '^  testing for TESTING.md: .*frontmatter'
+
+# doctor and approve testing say what is wrong and name the required keys.
+exec lyceum doctor
+stdout '^testing: .*not in Lyceum''s format.*lyceum: 1.*suite:'
+ttyrun $WORK/testing.txt 'lyceum approve testing'
+stdout '^exit=2$'
+stderr '^Can''t approve testing: .*not in Lyceum''s format.*lyceum: 1.*suite:'
+
+# The CLI never writes to the kept file.
+cmp TESTING.md $WORK/TESTING.orig
+
+-- go.mod --
+module example.com/app
+
+go 1.22
+-- TESTING.md --
+# Testing
+
+Run the whole suite with `go test ./...`.
+-- defaults.txt --
+
+
+-- testing.txt --
+testing

@@ -16,6 +16,7 @@ import (
 	"github.com/oritromax/lyceum/internal/gitx"
 	"github.com/oritromax/lyceum/internal/out"
 	"github.com/oritromax/lyceum/internal/templates"
+	"github.com/oritromax/lyceum/internal/testspec"
 	"github.com/spf13/cobra"
 )
 
@@ -177,6 +178,12 @@ func runInit(cmd *cobra.Command, _ []string) error {
 		}
 	}
 
+	// A TESTING.md already there is kept as it is; one lyceum test cannot read is named.
+	var kept error
+	if _, err := testspec.Read(root); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		kept = err
+	}
+
 	next := initNext
 	if len(found) == 0 {
 		approved, err := projectApproved(root)
@@ -205,6 +212,9 @@ func runInit(cmd *cobra.Command, _ []string) error {
 		}
 		for _, line := range skipped {
 			b.WriteString(line + "\n")
+		}
+		if kept != nil {
+			b.WriteString("Kept " + kept.Error() + "\n")
 		}
 		for _, h := range wire {
 			b.WriteString("Wired " + h.display + "\n")

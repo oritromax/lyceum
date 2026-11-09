@@ -48,7 +48,10 @@ Codex runs project hooks only after the owner trusts them; untrusted, they silen
 1. **Detect** whether this is a git repo (if not, offer `git init`, AC14), whether code exists (brownfield) or not
    (greenfield), and which harnesses are present.
 2. **Write** AGENTS.md, RULES.md, `lyceum/SPEC.md`, `lyceum/config.yaml`, `.gitattributes`, the `.gitignore` entries (`.lyceum/`, and what harnesses write on their own: `.commandcode/taste/`, `.claude/settings.local.json`, `.claude/worktrees/`),
-   and an empty `events.jsonl`. TESTING.md is not written here; the first `lyceum test` drafts it.
+   and an empty `events.jsonl`. TESTING.md is not written here; the first `lyceum test` drafts it. An existing
+   TESTING.md is kept unchanged; when `lyceum test` cannot read it, `init` prints a `Kept TESTING.md: …` line
+   naming what is wrong and the required keys, and the `lyceum-init` skill proposes the frontmatter to the owner
+   without editing the file (AC203) [DERIVED: plan 0b1405 What and why 1, 4 and 5].
 3. **Existing AGENTS.md / CLAUDE.md:** never overwritten. `init` shows the Lyceum section, asks once, and appends it between
    `<!-- lyceum:start -->` and `<!-- lyceum:end -->` markers. Re-running `init` replaces only the text between the markers.
 4. **Wire harnesses:** a harness is detected when its binary is on PATH or its project folder exists (`.claude/`,
@@ -136,3 +139,4 @@ by the hook, and confirmed by typing `eject` in a real terminal.
 | AC176 | Given `init`, then `.gitignore` lists `.commandcode/taste/`, `.claude/settings.local.json` and `.claude/worktrees/` once each, on a re-run too, keeping existing lines, and files written there do not dirty the tree |
 | AC182 | Given a release build, then `lyceum --version` prints the tag and `init` with defaults writes the CI workflow (the published-Action setting is on); a dev build keeps withholding it (AC163) |
 | AC183 | Given Lyceum's own repo after `lyceum init`, then `lyceum check --ci` passes on `main` |
+| AC203 | Given a committed TESTING.md with no frontmatter, when `init` runs, then it leaves the file byte-for-byte and prints `Kept TESTING.md: …` saying the file exists but is not in Lyceum's format and naming the required keys `lyceum: 1` and `suite:` [DERIVED: plan 0b1405 What and why 1 and 5; required keys from what TESTING.md parsing requires]; `status` then points to fixing its frontmatter (via `lyceum doctor`) instead of `lyceum approve testing` while it cannot be read [DERIVED: plan 0b1405 What and why 2]; `doctor` and the `approve testing` refusal say the same, naming the required keys [DERIVED: plan 0b1405 What and why 3]; the `lyceum-init` skill reads each kept file the CLI reports and proposes the exact block to add, never editing it [DERIVED: plan 0b1405 What and why 4] |

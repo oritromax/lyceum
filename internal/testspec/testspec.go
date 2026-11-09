@@ -222,7 +222,8 @@ func (s *Spec) HasTests(root string) (bool, error) {
 func frontmatter(data []byte) ([]byte, error) {
 	data = bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n"))
 	if !bytes.HasPrefix(data, []byte("---\n")) {
-		return nil, errors.New(`no frontmatter: the file must start with a "---" line`)
+		return nil, errors.New(`no frontmatter: the file exists but is not in Lyceum's format; add frontmatter between "---" lines ` +
+			`at the top with the required keys lyceum: 1 and suite: <the command that runs the full suite>, and keep the content below it`)
 	}
 	rest := data[len("---\n"):]
 	for i := 0; i < len(rest); {

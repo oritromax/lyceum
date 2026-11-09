@@ -11,6 +11,16 @@ Run `lyceum status` first. Its printed next action wins over anything here. Ever
 `lyceum init` reports whether the repo is greenfield (no code yet) or brownfield (code exists). If its files are
 not committed yet, commit them first (`init`'s `Next:` line gives the command).
 
+## Files `init` kept
+
+`init` never writes to a file that already exists. For each `Kept <file>: …` line it prints:
+
+1. Read the file and the repo, and derive the values from them (for `TESTING.md`, the suite command its prose or
+   the repo's build files name).
+2. Propose to the owner the exact block to add, as the line says (for `TESTING.md`, frontmatter at the top with
+   `lyceum: 1` and `suite:`, plus any optional keys the file supports, content kept below it).
+3. Do not edit the file: the owner applies the block. `lyceum doctor` then shows whether it reads.
+
 ## Greenfield: the project interview → gate `project` (owner approves)
 
 No application code in this skill. Write only `lyceum/SPEC.md` and files under `lyceum/spec/`.
