@@ -8,6 +8,12 @@ inputs:
       `@v1.2.3` runs that release, any other ref runs `latest`.
     required: false
     default: ""
+  token:
+    description: >-
+      Token for the GitHub REST API, used only when the public release download fails and the
+      binary is fetched through the API instead. Empty sends no token.
+    required: false
+    default: ${{ github.token }}
 runs:
   using: composite
   steps:
@@ -16,5 +22,6 @@ runs:
       run: '"$GITHUB_ACTION_PATH/run.sh"'
       env:
         LYCEUM_VERSION: ${{ inputs.version }}
+        LYCEUM_ACTION_TOKEN: ${{ inputs.token }}
         LYCEUM_ACTION_REF: ${{ github.action_ref }}
         LYCEUM_ACTION_REPOSITORY: ${{ github.action_repository }}

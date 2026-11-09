@@ -5,3 +5,4 @@
 - bug: brief.md defines no ACs and is not a project area (AC196)
 - bug: hooks fail open when lyceum is not on PATH after npx init (AC197)
 - bug: AC IDs are checked for uniqueness across area files (AC198)
+- bug: check action retries the release download and falls back to the REST API (AC199)

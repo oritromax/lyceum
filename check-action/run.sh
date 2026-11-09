@@ -1,16 +1,20 @@
 #!/usr/bin/env bash
 # The check-action step (AC181): resolve the release, download the runner's
-# archive and checksums.txt, verify the archive's sha256, then run
-# `lyceum check --ci` in the workspace and exit with its status.
+# archive and checksums.txt (retried, then through the REST API, AC199), verify
+# the archive's sha256, then run `lyceum check --ci` in the workspace and exit
+# with its status.
 #
 # Inputs (environment):
 #   LYCEUM_VERSION            the action's `version` input; empty means "from the action's ref"
+#   LYCEUM_ACTION_TOKEN       the action's `token` input; sent only to the REST API, when set
 #   LYCEUM_ACTION_REF         github.action_ref; when empty, read from GITHUB_ACTION_PATH
 #   LYCEUM_ACTION_REPOSITORY  github.action_repository; when empty, read from GITHUB_ACTION_PATH
 #   RUNNER_OS, RUNNER_ARCH, RUNNER_TEMP, GITHUB_WORKSPACE, GITHUB_ACTION_PATH  set by the runner
 # Overrides, for tests:
 #   LYCEUM_ACTION_BASE_URL    release download base (default https://github.com/<repo>/releases/download)
 #   LYCEUM_ACTION_GIT_URL     where tags are listed (default https://github.com/<repo>.git)
+#   LYCEUM_ACTION_API_URL     the REST API (default https://api.github.com)
+#   LYCEUM_ACTION_RETRIES, LYCEUM_ACTION_RETRY_DELAY  curl's --retry (default 5) and --retry-delay (default 10)
 set -euo pipefail
 
 fail() {
@@ -45,6 +49,7 @@ fi
 [ -n "$repo" ] || repo=oritromax/lyceum
 base_url="${LYCEUM_ACTION_BASE_URL:-https://github.com/$repo/releases/download}"
 git_url="${LYCEUM_ACTION_GIT_URL:-https://github.com/$repo.git}"
+api_url="${LYCEUM_ACTION_API_URL:-https://api.github.com}"
 
 # tags prints "<tag> <commit>" for every tag, annotated tags peeled to their commit.
 tags() {
@@ -155,8 +160,35 @@ archive="lyceum_${version}_${os}_${arch}.tar.gz"
 echo "lyceum check-action: $tag ($archive)"
 
 dir="$(mktemp -d "${RUNNER_TEMP:-${TMPDIR:-/tmp}}/lyceum.XXXXXX")"
+
+# Each download retries for about a minute (AC199); older curl lacks --retry-all-errors.
+retry=(--retry "${LYCEUM_ACTION_RETRIES:-5}" --retry-delay "${LYCEUM_ACTION_RETRY_DELAY:-10}" --retry-max-time 120)
+curl_help="$(curl --help all 2>/dev/null || true)"
+[[ "$curl_help" != *--retry-all-errors* ]] || retry+=(--retry-all-errors)
+auth=()
+[ -z "${LYCEUM_ACTION_TOKEN:-}" ] || auth=(-H "Authorization: Bearer $LYCEUM_ACTION_TOKEN")
+release_url="$api_url/repos/$repo/releases/tags/$tag"
+
+# api_download <file>: the same asset through the REST API, for when the public
+# release download fails: the release by tag, the asset id by name.
+api_download() {
+	local id
+	if [ ! -s "$dir/release.json" ]; then
+		curl -fsSL "${retry[@]}" ${auth[@]+"${auth[@]}"} -H "Accept: application/vnd.github+json" \
+			-o "$dir/release.json" "$release_url" || return 1
+	fi
+	id="$(tr ',{}' '\n\n\n' <"$dir/release.json" | awk -v f="$1" '
+		{ gsub(/[ \t\r]/, "") }
+		/^"url":"[^"]*\/releases\/assets\/[0-9]+"$/ { id = $0; sub(/.*\/assets\//, "", id); sub(/"$/, "", id) }
+		$0 == "\"name\":\"" f "\"" && id != "" { print id; exit }')"
+	[ -n "$id" ] || return 1
+	curl -fsSL "${retry[@]}" ${auth[@]+"${auth[@]}"} -H "Accept: application/octet-stream" \
+		-o "$dir/$1" "$api_url/repos/$repo/releases/assets/$id"
+}
+
 for f in "$archive" checksums.txt; do
-	curl -fsSL --retry 3 -o "$dir/$f" "$base_url/$tag/$f" || fail "cannot download $base_url/$tag/$f"
+	curl -fsSL "${retry[@]}" -o "$dir/$f" "$base_url/$tag/$f" || api_download "$f" ||
+		fail "cannot download $f from $base_url/$tag/$f or $release_url"
 done
 
 want_sum="$(awk -v f="$archive" '$2 == f || $2 == "*" f { print $1 }' "$dir/checksums.txt")"
