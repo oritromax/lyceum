@@ -1,0 +1,84 @@
+# AC199: given the public release download answering 5xx, then check-action retries it over a longer window, then fetches the same asset through the GitHub REST API (with the token when one is set), verifies its checksum as before, and fails only when both paths fail, naming both
+# fakegithub serves a fake release over HTTP: /down answers 504 every time,
+# /flaky answers 504 twice per file, /api is the REST API, /apidown answers 504.
+# Retries are cut to 2 at 1 s apart so the script runs in seconds.
+exec bash $WORK/mkrelease.sh $WORK/rel
+fakegithub $WORK/rel
+env LYCEUM_ACTION_REPOSITORY=oritromax/lyceum
+env LYCEUM_ACTION_API_URL=$GH/api
+env LYCEUM_ACTION_RETRIES=2
+env LYCEUM_ACTION_RETRY_DELAY=1
+env LYCEUM_ACTION_TOKEN=
+env GITHUB_WORKSPACE=$REPO
+env GITHUB_ACTION_PATH=$CHECK_ACTION
+mkdir $WORK/tmp
+env RUNNER_TEMP=$WORK/tmp
+env RUNNER_OS=Linux
+env RUNNER_ARCH=X64
+env LYCEUM_VERSION=
+env LYCEUM_ACTION_REF=v1.0.0
+
+# The public download answers 504 on every try: each file is tried three times,
+# then fetched through the REST API by asset id, with no token when none is set.
+env LYCEUM_ACTION_BASE_URL=$GH/down
+exec bash $CHECK_ACTION/run.sh
+stdout '^stub 1\.0\.0 linux_amd64: check --ci$'
+grep -count=3 '^/down/v1\.0\.0/lyceum_1\.0\.0_linux_amd64\.tar\.gz ' $WORK/gh.log
+grep -count=3 '^/down/v1\.0\.0/checksums\.txt ' $WORK/gh.log
+grep '^/api/repos/oritromax/lyceum/releases/tags/v1\.0\.0 auth=$' $WORK/gh.log
+grep -count=2 '^/api/repos/oritromax/lyceum/releases/assets/[0-9]+ auth=$' $WORK/gh.log
+
+# With a token, the REST API calls carry it as a bearer token; the public URL never does.
+rm $WORK/gh.log
+env LYCEUM_ACTION_TOKEN=t0ken
+exec bash $CHECK_ACTION/run.sh
+stdout '^stub 1\.0\.0 linux_amd64: check --ci$'
+grep '^/api/repos/oritromax/lyceum/releases/tags/v1\.0\.0 auth=Bearer t0ken$' $WORK/gh.log
+grep -count=2 '^/api/repos/oritromax/lyceum/releases/assets/[0-9]+ auth=Bearer t0ken$' $WORK/gh.log
+! grep '^/down/.* auth=.' $WORK/gh.log
+env LYCEUM_ACTION_TOKEN=
+
+# A public download that recovers within the retries needs no REST API call.
+rm $WORK/gh.log
+env LYCEUM_ACTION_BASE_URL=$GH/flaky
+exec bash $CHECK_ACTION/run.sh
+stdout '^stub 1\.0\.0 linux_amd64: check --ci$'
+grep -count=3 '^/flaky/v1\.0\.0/lyceum_1\.0\.0_linux_amd64\.tar\.gz ' $WORK/gh.log
+! grep '^/api/' $WORK/gh.log
+
+# An archive fetched through the REST API is checked against checksums.txt as before.
+env LYCEUM_ACTION_BASE_URL=$GH/down
+env LYCEUM_ACTION_REF=v0.9.0
+! exec bash $CHECK_ACTION/run.sh
+stderr '^lyceum check-action: checksum mismatch for lyceum_0\.9\.0_linux_amd64\.tar\.gz: expected 0{64}, got [0-9a-f]{64}$'
+! stdout stub
+env LYCEUM_ACTION_REF=v1.0.0
+
+# Only when both paths fail does the job fail, naming both URLs.
+env LYCEUM_ACTION_API_URL=$GH/apidown
+! exec bash $CHECK_ACTION/run.sh
+stderr '^lyceum check-action: cannot download lyceum_1\.0\.0_linux_amd64\.tar\.gz from http://127\.0\.0\.1:[0-9]+/down/v1\.0\.0/lyceum_1\.0\.0_linux_amd64\.tar\.gz or http://127\.0\.0\.1:[0-9]+/apidown/repos/oritromax/lyceum/releases/tags/v1\.0\.0$'
+! stdout stub
+
+-- mkrelease.sh --
+# mkrelease.sh <release-dir>: a fake GitHub release tree, <tag>/<file>. Each
+# archive holds a stub naming itself; v0.9.0's checksums.txt lists a wrong sum.
+set -eu
+rel=$1
+sum() {
+	if command -v sha256sum >/dev/null; then sha256sum "$1"; else shasum -a 256 "$1"; fi | awk '{ print $1 }'
+}
+for tag in v0.9.0 v1.0.0; do
+	v=${tag#v}
+	a="lyceum_${v}_linux_amd64.tar.gz"
+	d=$(mktemp -d)
+	printf '#!/bin/sh\necho "stub %s linux_amd64: $*"\n' "$v" >"$d/lyceum"
+	chmod +x "$d/lyceum"
+	mkdir -p "$rel/$tag"
+	tar -czf "$rel/$tag/$a" -C "$d" lyceum
+	if [ "$tag" = v0.9.0 ]; then
+		echo "$(printf '0%.0s' $(seq 64))  $a" >"$rel/$tag/checksums.txt"
+	else
+		echo "$(sum "$rel/$tag/$a")  $a" >"$rel/$tag/checksums.txt"
+	fi
+done
