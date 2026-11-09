@@ -4,8 +4,21 @@ type: bug
 title: brief.md is read for AC definitions and counts as an area for the project gate
 branch: fix/5b4f1f-brief-md-is-read-for-ac-definitions-and
 status: implemented
-gate: cause
-approvals: []
+gate: close
+approvals:
+  - gate: cause
+    hashes:
+      internal/acmap/acmap.go: sha256:87d60525fe8dffa70dc3b74ed36de6aff3c004dbe7f08500785eb93a077c31ec
+      internal/approval/approval.go: sha256:d42361433e795553ae2e0581938c6139af11ea0d6a96d090a3f2c172de537920
+      internal/check/check.go: sha256:eb7758ee56230d0cba5e89cbaab8363d5f903a1fb4240006d95708276e79ee9a
+      internal/cli/approve.go: sha256:6048ce27ea168185c1f6e7bfb21f325a1f441ab70467d5d3d1db12e13912e74a
+      lyceum/LIBRARY.md: sha256:b3c2bdb8ca7688ac5721818938c6a03a61a740031d72bd7d102ef04a78221927
+      lyceum/SPEC.md: sha256:70f697d337a3104d43fd8a9bc4393a28687e9bb466b4cd2761dcbc5a4840f705
+      lyceum/plan/5b4f1f-brief-md-is-read-for-ac-definitions-and.md: sha256:a12ce20bb8a6567f1f7a4cae0ad096a74f276ffd447cfff5680247a4581825be
+      lyceum/spec/units.md: sha256:5ece0282654d8328c8ecb62e912f49ef55b48c83c964bd838ad698b825de8f76
+    commit: 9ae7ced
+    by: oritromax@gmail.com
+    at: 2026-11-09T06:31:49Z
 files: [internal/acmap/acmap.go, internal/acmap/acmap_test.go, internal/approval/approval.go, internal/check/check.go, internal/cli/approve.go]
 acs: [AC196]
 ---
