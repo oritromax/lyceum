@@ -46,6 +46,8 @@ When a unit's plan names an area that has no spec file, the agent first writes t
 
 The first `lyceum test` drafts `TESTING.md` from the test frameworks it detects. If the project has no tests, it prompts to create them; on existing code these are characterization tests that pin current behaviour, right or wrong.
 
+If the project already has a `TESTING.md` that is not in Lyceum's format, `init` keeps it unchanged and says so, naming the frontmatter keys it needs. The agent proposes the exact frontmatter from the file and the repo; you add it at the top, then approve with `lyceum approve testing`.
+
 ## Other inspect commands
 
 - `lyceum trace "<question>"` follows one flow end to end, by reading the code or with a full run against an environment defined in `TESTING.md`.

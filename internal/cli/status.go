@@ -183,7 +183,7 @@ func runStatus(cmd *cobra.Command, args []string) error {
 				pending = append(pending, pendingApproval{Gate: p.Gate, Unit: p.ID, Next: u.Next})
 			}
 			if testing && reliesOnTesting(p) {
-				current.Next = gateNext(gate.Judgment, approval.Testing)
+				current.Next = testingNext(root)
 			}
 		}
 	}
@@ -191,7 +191,7 @@ func runStatus(cmd *cobra.Command, args []string) error {
 		pending = append(pending, pendingApproval{Gate: string(approval.Project), Next: gateNext(gate.Judgment, approval.Project)})
 	}
 	if testing {
-		pending = append(pending, pendingApproval{Gate: string(approval.Testing), Next: gateNext(gate.Judgment, approval.Testing)})
+		pending = append(pending, pendingApproval{Gate: string(approval.Testing), Next: testingNext(root)})
 	}
 
 	evs, err := events.Read(root)

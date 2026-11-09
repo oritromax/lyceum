@@ -615,6 +615,15 @@ func testingPending(root string) (bool, error) {
 	return !approved || changed, err
 }
 
+// testingNext is the next action for a pending testing gate: approve testing,
+// or, while TESTING.md cannot be read, fixing it first, since approve refuses it.
+func testingNext(root string) string {
+	if _, err := testspec.Read(root); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return `fix the frontmatter of ` + testspec.Path + ` first: "lyceum doctor" names what it lacks`
+	}
+	return gateNext(gate.Judgment, approval.Testing)
+}
+
 // projectPending reports whether the project gate waits for the owner:
 // the repo is greenfield (brownfield finds no code), its area registry lists
 // at least one area other than the brief, and no counting project approval

@@ -111,7 +111,8 @@ If the folder isn't a git repo yet, `init` offers to run `git init` first.
 > silently doesn't run. `init` prints the step for each.
 
 `TESTING.md` isn't written by `init`. The first `lyceum test` drafts it from the test frameworks it
-detects, and you approve it with `lyceum approve testing`.
+detects, and you approve it with `lyceum approve testing`. An existing `TESTING.md` without Lyceum's frontmatter
+is kept unchanged: `init` names the keys it lacks, and the agent proposes the frontmatter for you to add.
 
 Re-running `init` updates the skills and hooks to your installed version. It never touches your `lyceum/`
 content.

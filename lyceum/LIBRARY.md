@@ -9,3 +9,4 @@
 - bug: close pushes the unit branch before it opens the pull request (AC200)
 - bug: a change to cause-approved files at close sends the bug back to cause (AC201)
 - bug: an AC ID defined twice in one area file fails check (AC202)
+- bug: init names a kept TESTING.md that is not in Lyceum's format, and status no longer sends it to approve testing (AC203)
