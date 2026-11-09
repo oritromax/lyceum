@@ -23,7 +23,10 @@ No code at this gate. Write only under `lyceum/` (and `docs/` if needed). The ho
 refuses one, stop and tell the owner. Never work around it.
 
 1. Read `lyceum/SPEC.md`, then only the area files this feature touches.
-2. Interview, scaled to the change. If the request already answers everything, ask nothing and draft.
+2. Opening checkpoint: before any question, save the owner's brief verbatim to a `## Brief` section of the plan,
+   and append each further message to it. A first reply may be the first of several. Ask once "Anything to add,
+   or shall I proceed?" and ask numbered questions only after the owner says proceed.
+   Then interview, scaled to the change. If the request already answers everything, ask nothing and draft.
    - Numbered questions, lettered options, your recommended option first, then stop and wait.
    - Use the harness's structured-question tool when it has one.
    - Never ask what the request or the spec already answers. Options are concrete alternatives.
@@ -34,6 +37,7 @@ refuses one, stop and tell the owner. Never work around it.
 4. Write the spec change, ACs included, straight into each `lyceum/spec/<area>.md` it touches. `approve spec`
    hashes those files with the plan: the owner approves the spec text where it lives, and `close` copies nothing.
 5. Write the plan body:
+   - `## Brief`: the owner's words, verbatim (step 2); never reword them.
    - `## What and why`: the change in a few lines; point at the area files, never copy the spec.
    - `## Spec delta`: only the areas changed and the new AC IDs. The text is in the area files.
    - `## Steps`: ordered chunks, each naming the ACs it proves.
@@ -46,9 +50,15 @@ refuses one, stop and tell the owner. Never work around it.
    `lyceum/spec/`. Define each as a table row `| ACn | Given … |` or a bullet `- **ACn** Given …`,
    one per AC, with the ID leading the line. Every AC must be testable. Add the new IDs to the area's row in the
    registry of `lyceum/SPEC.md`:
-   you write the rows, and `lyceum check` validates them. Mark spec text the owner did not state: `[DERIVED: why]` or
-   `[AGENT-PROPOSED: what]`. `approve spec` lists those lines.
-8. STOP. Summarise in a few lines: what the feature does, the areas touched, the ACs, the steps, and any
+   you write the rows, and `lyceum check` validates them. Mark spec text the brief (the plan's `## Brief`) does not
+   state: `[DERIVED: why]` or `[AGENT-PROPOSED: what]`. `approve spec` lists those lines.
+8. Closing checkpoint: ask "Anything to add, or shall I consider the spec ready?". Append each addition to
+   `## Brief`, update the spec and plan, and ask again. Give the approve command only after the owner says ready.
+   - "Ready" is not an approval: it only lets you hand over the approve command. Under
+     `approvals.harness_prompt: allow`, running `lyceum approve` still needs a separate request from the owner.
+   - Late additions skip the two-round limit: they go straight into the spec and plan, and anything still
+     uncertain is left as `[NEEDS CLARIFICATION: …]`.
+9. STOP. Summarise in a few lines: what the feature does, the areas touched, the ACs, the steps, and any
    `[NEEDS CLARIFICATION]`. Tell the owner: "Run `lyceum approve spec` yourself in a separate terminal."
    One approval covers the spec delta, the ACs and the plan.
 

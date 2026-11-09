@@ -16,7 +16,10 @@ Gates for a bug: `repro` (`lyceum test --repro`) → `diagnose` → `fix` → `v
 
 1. No unit on this branch for this bug: run `lyceum add bug "<title>"`. With no title, ask for one.
    `add` refuses a dirty tree: ask the owner whether to commit or stash the changes.
-2. If the report leaves the symptom unclear, interview briefly:
+2. Opening checkpoint: before any question, save the owner's brief verbatim to a `## Brief` section of the plan,
+   and append each further message to it. A first reply may be the first of several. Ask once "Anything to add,
+   or shall I proceed?" and ask numbered questions only after the owner says proceed.
+   Then, if the report leaves the symptom unclear, interview briefly:
    - Numbered questions, lettered options, your recommended option first, then stop and wait.
    - Use the harness's structured-question tool when it has one.
    - Ask only what the report doesn't answer: what happens, what should happen, how to trigger it.
@@ -49,8 +52,8 @@ file, but changing or removing a line it had at `repro` needs the owner's `lyceu
 3. If the spec was silent or wrong about this case, write the edge case or a new AC (Given / When / Then, next free
    `ACn`, as a table row `| ACn | Given … |` or a bullet `- **ACn** Given …`, one per AC, with the ID leading the
    line) into its area file and the registry range in `lyceum/SPEC.md` before `cause`, name it in the plan's
-   `## Spec delta`, and list it in `acs:`. `approve cause` hashes that area file. Mark text the owner did not state:
-   `[DERIVED: why]` or `[AGENT-PROPOSED: what]`; `approve cause` lists those lines.
+   `## Spec delta`, and list it in `acs:`. `approve cause` hashes that area file. Mark spec text the brief (the
+   plan's `## Brief`) does not state: `[DERIVED: why]` or `[AGENT-PROPOSED: what]`; `approve cause` lists those lines.
 
 ## Gate `fix`
 
@@ -68,6 +71,13 @@ file, but changing or removing a line it had at `repro` needs the owner's `lyceu
 3. Never claim the bug is fixed from reasoning. Fixed is the CLI's `Cleared verify` line.
 
 ## Gate `cause`: the owner approves
+
+Closing checkpoint: ask "Anything to add, or shall I consider the spec ready?". Append each addition to
+`## Brief`, update the spec and plan, and ask again. Give the approve command only after the owner says ready.
+- "Ready" is not an approval: it only lets you hand over the approve command. Under
+  `approvals.harness_prompt: allow`, running `lyceum approve` still needs a separate request from the owner.
+- Late additions skip the two-round limit: they go straight into the spec and plan, and anything still
+  uncertain is left as `[NEEDS CLARIFICATION: …]`. A code change goes back through `fix` and `verify`.
 
 STOP. Summarise in a few lines: the root cause, the fix, the repro test and that it now passes.
 Tell the owner: "Run `lyceum approve cause` yourself in a separate terminal."
