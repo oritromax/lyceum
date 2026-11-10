@@ -6,6 +6,8 @@ branch: chore/311a4a-close-help-text-says-it-folds-the-spec-d
 status: planned
 gate: plan
 approvals: []
+files:
+  - internal/cli/root.go
 ---
 
 ## Brief
