@@ -3,9 +3,15 @@ id: 311a4a-close-help-text-says-it-folds-the-spec-d
 type: chore
 title: close help text says it folds the spec delta
 branch: chore/311a4a-close-help-text-says-it-folds-the-spec-d
-status: planned
-gate: plan
-approvals: []
+status: in-progress
+gate: build
+approvals:
+  - gate: plan
+    hashes:
+      lyceum/plan/311a4a-close-help-text-says-it-folds-the-spec-d.md: sha256:87f5a19f80b3c06cb6ca7dc6d87186b3d579a0f95e5fa07fead873b10f11e80d
+    commit: 5f23f46
+    by: oritromax@gmail.com
+    at: 2026-11-10T05:44:36Z
 files:
   - internal/cli/root.go
 ---
