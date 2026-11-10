@@ -139,7 +139,7 @@ func newRoot() *cobra.Command {
 	amend := stub("lifecycle", `amend [unit] "<reason>"`, "Reopen an approved plan mid-build")
 	amend.RunE = runAmend
 	amend.Flags().Bool("intent", false, "On a refactor: go back to intent, not plan, when the intent itself changed")
-	closeCmd := stub("lifecycle", "close [unit]", "Fold the spec delta, close the unit, open a PR")
+	closeCmd := stub("lifecycle", "close [unit]", "Check and close the unit, push its branch, open a PR")
 	closeCmd.RunE = runClose
 	logCmd := stub("lifecycle", "log", "Project history")
 	logCmd.RunE = runLog
