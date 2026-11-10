@@ -3,7 +3,7 @@ id: 311a4a-close-help-text-says-it-folds-the-spec-d
 type: chore
 title: close help text says it folds the spec delta
 branch: chore/311a4a-close-help-text-says-it-folds-the-spec-d
-status: implemented
+status: closed
 gate: close
 approvals:
   - gate: plan
